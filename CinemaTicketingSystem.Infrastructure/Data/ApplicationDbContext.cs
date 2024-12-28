@@ -42,6 +42,7 @@ namespace CinemaTicketingSystem.Infrastructure.Data
                 .HasData(
                 new Movie
                 {
+                    MovieId = 1,
                     Title = "The Matrix",
                     Description = "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.",
                     Genre = "Action, Sci-Fi",
