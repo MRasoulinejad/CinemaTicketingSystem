@@ -5,14 +5,15 @@ namespace CinemaTicketingSystem.Web.Controllers
 {
     public class MovieController : Controller
     {
-        private readonly ApplicationDbContext _DbContext;
-        public MovieController(ApplicationDbContext DbContext)
+        private readonly ApplicationDbContext _db;
+        public MovieController(ApplicationDbContext db)
         {
-            _DbContext = DbContext;
+            _db = db;
         }
         public IActionResult Index()
         {
-            return View();
+            var movies = _db.Movies.ToList();
+            return View(movies);
         }
     }
 }

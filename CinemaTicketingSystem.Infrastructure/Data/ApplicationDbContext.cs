@@ -37,6 +37,19 @@ namespace CinemaTicketingSystem.Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(r => r.SeatId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Movie>()
+                .HasData(
+                new Movie
+                {
+                    Title = "The Matrix",
+                    Description = "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.",
+                    Genre = "Action, Sci-Fi",
+                    Duration = 136,
+                    ReleaseDate = new DateOnly(1999, 3, 1),
+                    Poster = "https://upload.wikimedia.org/wikipedia/en/c/c1/The_Matrix_Poster.jpg"
+                }
+                );
         }
 
 

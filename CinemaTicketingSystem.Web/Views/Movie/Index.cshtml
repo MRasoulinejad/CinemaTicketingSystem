@@ -1,0 +1,28 @@
+﻿@model IEnumerable<CinemaTicketingSystem.Domain.Entities.Movie>
+
+
+<h1>Movies</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Genre</th>
+            <th>Duration</th>
+            <th>Release Date</th>
+            <th>Poster</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var movie in Model)
+        {
+            <tr>
+                <td>@movie.Title</td>
+                <td>@movie.Genre</td>
+                <td>@movie.Duration</td>
+                <td>@movie.ReleaseDate</td>
+                <td><img src="@movie.Poster" alt="@movie.Title" /></td>
+            </tr>
+        }
+    </tbody>
+</table>
