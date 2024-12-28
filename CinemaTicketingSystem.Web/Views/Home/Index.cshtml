@@ -1,8 +1,37 @@
-﻿@{
+﻿@using CinemaTicketingSystem.Domain.Entities
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+
+@model IEnumerable<Theatre>
+
+<!-- 🟦 Featured Theatres Section -->
+<section class="container mb-5">
+    <h2 class="text-center mb-4">🎭 Featured Theatres</h2>
+    <div class="row">
+        @if (Model != null)
+        {
+            foreach (var theatre in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <img src="@theatre.ImageUrl" class="card-img-top" alt="@theatre.TheatreName" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">@theatre.TheatreName</h5>
+                            <p class="card-text">📍 Location: @theatre.Location</p>
+                            <p class="card-text">💺 Total Seats: @theatre.TotalSeats</p>
+                        </div>
+                        <div class="card-footer text-center">
+                            <a asp-controller="Theatre" asp-action="Details" asp-route-id="@theatre.TheatreId" class="btn btn-primary btn-sm">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="text-center">No theatres available at the moment.</p>
+        }
+    </div>
+</section>

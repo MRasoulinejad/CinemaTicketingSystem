@@ -17,5 +17,6 @@ namespace CinemaTicketingSystem.Domain.Entities
         public int TotalSeats { get; set; }
         [Required]
         public string Location { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }
