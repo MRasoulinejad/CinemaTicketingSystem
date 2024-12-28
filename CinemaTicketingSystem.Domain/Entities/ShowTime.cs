@@ -12,15 +12,22 @@ namespace CinemaTicketingSystem.Domain.Entities
     {
         [Key]
         public int ShowTimeId { get; set; }
+        [Required]
         public DateOnly ShowDate { get; set; }
+        [Required]
         public TimeSpan ShowTimeStart { get; set; }
+        [Required]
         public TimeSpan ShowTimeEnd { get; set; }
+        [Required]
         public int TheatreId { get; set; }
         [ForeignKey("TheatreId")]
         public Theatre Theatre { get; set; }
+        [Required]
         public int MovieId { get; set; }
         [ForeignKey("MovieId")]
         public Movie Movie { get; set; }
+        [Required]
+        [Column(TypeName = "decimal(10,2)")]
         public decimal Price { get; set; }
     }
 }

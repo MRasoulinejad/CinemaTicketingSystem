@@ -12,7 +12,9 @@ namespace CinemaTicketingSystem.Domain.Entities
     {
         [Key]
         public int SeatId { get; set; }
+        [Required]
         public string SeatNumber { get; set; }
+        [Required]
         public int TheatreId { get; set; }
         [ForeignKey("TheatreId")]
         public Theatre Theatre { get; set; }
