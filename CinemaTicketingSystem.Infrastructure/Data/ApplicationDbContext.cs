@@ -48,7 +48,8 @@ namespace CinemaTicketingSystem.Infrastructure.Data
                     Genre = "Action, Sci-Fi",
                     Duration = 136,
                     ReleaseDate = new DateOnly(1999, 3, 1),
-                    Poster = "https://upload.wikimedia.org/wikipedia/en/c/c1/The_Matrix_Poster.jpg"
+                    Poster = "https://upload.wikimedia.org/wikipedia/en/c/c1/The_Matrix_Poster.jpg",
+                    TrailerUrl = "https://www.youtube.com/embed/m8e-FF8MsqU"
                 }
                 );
         }
