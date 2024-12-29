@@ -4,7 +4,41 @@
 }
 
 
-@model IEnumerable<Theatre>
+@model HomeViewModel
+
+
+<!-- 🟩 Latest Movies Section -->
+<section class="container mb-5">
+    <h2 class="text-center mb-4">🎬 Latest Movies</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @if (Model != null)
+        {
+            foreach (var movie in Model.LatestMovies)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@movie.Poster" class="card-img-top" alt="@movie.Title" style="height: 525px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">@movie.Title</h5>
+                            <p class="card-text">🎭 Genre: @movie.Genre</p>
+                            <p class="card-text">⏳ Duration: @movie.Duration min</p>
+                            <p class="card-text">📅 Release Date: @movie.ReleaseDate.ToShortDateString()</p>
+                        </div>
+                        <div class="card-footer text-center">
+                            <a asp-controller="Movie" asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-primary btn-sm">View Details</a>
+                            <a asp-controller="Reservation" asp-action="Create" asp-route-id="@movie.MovieId" class="btn btn-success btn-sm">Book Now</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="text-center">No movies available at the moment.</p>
+        }
+    </div>
+</section>
+
 
 <!-- 🟦 Featured Theatres Section -->
 <section class="container mb-5">
@@ -12,7 +46,7 @@
     <div class="row">
         @if (Model != null)
         {
-            foreach (var theatre in Model)
+            foreach (var theatre in Model.RandomTheatres)
             {
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm h-100">

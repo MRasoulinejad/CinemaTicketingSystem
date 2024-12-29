@@ -29,6 +29,9 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Reservation" asp-action="Index">Reservations</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="About">About</a>
+                        </li>
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
@@ -47,14 +50,25 @@
         </nav>
     </header>
 
-    <!-- 🟩 Hero Section -->
+   @*  <!-- 🟩 Hero Section -->
     <section class="hero-section mb-4">
         <div class="container">
             <h1>Welcome to the Ultimate Cinema Experience</h1>
             <p class="lead">Book your tickets online and enjoy the latest blockbusters with us!</p>
             <a asp-controller="Movie" asp-action="Index" class="btn btn-warning btn-lg">Explore Movies</a>
         </div>
+    </section> *@
+
+    <!-- 🟩 Hero Section -->
+    <section class="hero-section mb-4" style="background: url('@(ViewData["HeroImageUrl"] ?? "/images/default-hero.jpg")') no-repeat center center/cover;">
+        <div class="container text-center">
+            <h1>@(ViewData["HeroTitle"] ?? "Welcome to the Ultimate Cinema Experience")</h1>
+            <p class="lead">@(ViewData["HeroSubtitle"] ?? "Book your tickets online and enjoy the latest blockbusters with us!")</p>
+            <a asp-controller="Movie" asp-action="Index" class="btn btn-warning btn-lg">Explore Movies</a>
+        </div>
     </section>
+
+
 
     <!-- 🟧 Main Content -->
     <div class="container">

@@ -20,16 +20,15 @@ body {
         color: #ffc107 !important;
     }
 
-/* Hero Section */
+/* 🎬 Hero Section Base Styles */
 .hero-section {
-    /*temp image: https ://via.placeholder.com/1920x600 */
-    background: url('/images/hero-banner.jpg') no-repeat center center/cover;
     height: 600px;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
 }
 
     .hero-section h1 {
@@ -37,6 +36,28 @@ body {
         font-weight: bold;
         text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
     }
+
+/* Responsive Styling for Smaller Screens */
+@media (max-width: 768px) {
+    .hero-section {
+        height: 400px;
+    }
+
+}
+
+
+
+
+
+    
+
+
+.card-img-top {
+    height: 250px;
+    object-fit: cover;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
 
 /* Footer Styling */
 .footer {
@@ -108,4 +129,23 @@ body {
 .card-footer {
     background-color: #f8f9fa;
 }
+
+/* 🎭 Featured Theatres Cards */
+
+/* Card Image Styling */
+.card-img-top {
+    width: 100%; /* Ensure the image spans the full width of the card */
+    height: 200px; /* Fixed height for desktop view */
+    object-fit: cover; /* Maintain aspect ratio and fill the space without distortion */
+    border-top-left-radius: 8px; /* Rounded corners on the top-left */
+    border-top-right-radius: 8px; /* Rounded corners on the top-right */
+}
+
+/* Responsive Styling for Mobile */
+@media (max-width: 768px) {
+    .card-img-top {
+        height: 150px; /* Reduced height for better display on smaller screens */
+    }
+}
+
 

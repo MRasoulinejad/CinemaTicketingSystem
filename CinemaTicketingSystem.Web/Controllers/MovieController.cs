@@ -13,6 +13,11 @@ namespace CinemaTicketingSystem.Web.Controllers
         public IActionResult Index()
         {
             var movies = _db.Movies.ToList();
+
+            ViewData["HeroImageUrl"] = "/images/movies-hero.jpg";
+            ViewData["HeroTitle"] = "Explore Our Movie Collection";
+            ViewData["HeroSubtitle"] = "Discover the latest blockbusters and timeless classics. Book your tickets now!";
+
             return View(movies);
         }
     }
