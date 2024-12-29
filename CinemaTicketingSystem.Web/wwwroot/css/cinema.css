@@ -148,4 +148,35 @@ body {
     }
 }
 
+/* 🎬 Movie Details Page */
+
+/* Poster Styling */
+.img-fluid {
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+/* Movie Information */
+.movie-details h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.movie-details p {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Trailer Styling */
+.ratio {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Booking Button */
+/*.btn-success {
+    font-size: 1.2rem;
+    padding: 0.75rem 1.5rem;
+}*/
 

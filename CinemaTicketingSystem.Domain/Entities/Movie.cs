@@ -24,5 +24,7 @@ namespace CinemaTicketingSystem.Domain.Entities
         public DateOnly ReleaseDate { get; set; }
         [Required]
         public string Poster { get; set; }
+        [Required]
+        public string TrailerUrl { get; set; }
     }
 }

@@ -1,0 +1,34 @@
+﻿@using CinemaTicketingSystem.Domain.Entities
+@model Movie
+
+<div class="container my-5">
+    <!-- Movie Details Section -->
+    <div class="row">
+        <!-- Movie Poster -->
+        <div class="col-md-4 text-center">
+            <img src="@Model.Poster" alt="@Model.Title Poster" class="img-fluid rounded shadow-sm" style="max-height: 500px; object-fit: cover;">
+        </div>
+
+        <!-- Movie Information -->
+        <div class="col-md-8">
+            <h1 class="fw-bold">@Model.Title</h1>
+            <p class="text-muted">🎭 Genre: @Model.Genre</p>
+            <p>⏳ Duration: @Model.Duration min</p>
+            <p>📅 Release Date: @Model.ReleaseDate.ToString("yyyy-MM-dd")</p>
+            <p class="lead">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vel tortor orci. Aenean eget dolor sit amet odio tristique malesuada.
+            </p>
+            <div class="d-grid gap-2 d-md-flex">
+                <a asp-controller="Reservation" asp-action="Create" asp-route-id="@Model.MovieId" class="btn btn-success btn-lg">🎟️ Book Now</a>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <!-- Movie Trailer Section -->
+    <h2 class="text-center mb-4">🎥 Movie Trailer</h2>
+    <div class="ratio ratio-16x9">
+        <iframe src="@Model.TrailerUrl" title="Movie Trailer" allowfullscreen></iframe>
+    </div>
+</div>
