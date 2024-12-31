@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CinemaTicketingSystem.Infrastructure.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -21,6 +21,7 @@ namespace CinemaTicketingSystem.Infrastructure.Data
         public DbSet<ShowTime> ShowTimes { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

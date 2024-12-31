@@ -12,8 +12,10 @@ namespace CinemaTicketingSystem.Domain.Entities
     {
         [Key]
         public int ReservationId { get; set; }
-        //public int UserId { get; set; }
-        //public ApplicationUser User { get; set; }
+        [Required]
+        public string UserId { get; set; }
+        [ForeignKey("UserId")]
+        public ApplicationUser User { get; set; }
         [Required]
         public int ShowTimeId { get; set; }
         [ForeignKey("ShowTimeId")]
