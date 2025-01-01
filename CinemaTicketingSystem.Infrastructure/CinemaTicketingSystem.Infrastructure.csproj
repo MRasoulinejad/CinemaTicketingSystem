@@ -20,11 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CinemaTicketingSystem.Domain\CinemaTicketingSystem.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Repository\" />
+    <ProjectReference Include="..\CinemaTicketingSystem.Application\CinemaTicketingSystem.Application.csproj" />
   </ItemGroup>
 
 </Project>
