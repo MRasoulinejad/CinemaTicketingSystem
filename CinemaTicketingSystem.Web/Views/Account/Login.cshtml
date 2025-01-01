@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Login";
+}
+
+<section class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 rounded">
+                <h2 class="text-center fw-bold mb-4">🔐 Login</h2>
+
+                <!-- Validation Messages -->
+                @if (ViewData["Error"] != null && !string.IsNullOrEmpty(ViewData["Error"].ToString()))
+                {
+                    <div class="alert alert-danger">@ViewData["Error"]</div>
+                }
+
+                @if (ViewData["Invalid"] != null && !string.IsNullOrEmpty(ViewData["Invalid"].ToString()))
+                {
+                    <div class="alert alert-danger">@ViewData["Invalid"]</div>
+                }
+
+                @model LoginVM
+
+                <form asp-action="Login" method="post">
+                    <!-- Username Field -->
+                    <div class="mb-3">
+                        <label for="Username" class="form-label">Username</label>
+                        <input type="text" id="Username" asp-for="Username" class="form-control" placeholder="Enter your username" required>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="mb-3">
+                        <label for="Password" class="form-label">Password</label>
+                        <input type="password" id="Password" asp-for="Password" class="form-control" placeholder="Enter your password" required>
+                    </div>
+
+                    <!-- Remember Me Checkbox -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" id="RememberMe" asp-for="RememberMe" class="form-check-input">
+                        <label for="RememberMe" class="form-check-label">Remember Me</label>
+                    </div>
+
+                    <!-- Google reCAPTCHA -->
+                    <div class="mb-3 text-center">
+                        <div class="g-recaptcha" data-sitekey="@ViewData["SiteKey"]"></div>
+                        <!-- Hidden Field for reCAPTCHA Token -->
+                        <input type="hidden" id="g-recaptcha-response">
+                    </div>
+
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+
+                    <!-- Forgot Password and Register Links -->
+                    <div class="text-center mt-3">
+                        <a href="#" class="text-decoration-none">Forgot Password?</a> |
+                        <a asp-action="Register" class="text-decoration-none">Create an Account</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Google reCAPTCHA Script -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>

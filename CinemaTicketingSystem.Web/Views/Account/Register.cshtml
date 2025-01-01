@@ -1,0 +1,97 @@
+﻿@{
+    ViewData["Title"] = "Register";
+    
+}
+
+<section class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4 rounded">
+                <h2 class="text-center fw-bold mb-4">📝 Register</h2>
+
+                <!-- Validation Messages -->
+                @if (ViewData["Error"] != null && !string.IsNullOrEmpty(ViewData["Error"].ToString()))
+                {
+                    <div class="alert alert-danger">@ViewData["Error"]</div>
+                }
+
+                @if (ViewData["Success"] != null && !string.IsNullOrEmpty(ViewData["Success"].ToString()))
+                {
+                    <div class="alert alert-success">@ViewData["Success"]</div>
+                }
+
+                @model RegisterUserVM
+
+                <form asp-action="Register" method="post">
+                    <div class="row">
+                        <!-- First Name -->
+                        <div class="col-md-6 mb-3">
+                            <label for="FirstName" class="form-label">First Name</label>
+                            <input type="text" id="FirstName" asp-for="FirstName" class="form-control" placeholder="Enter your first name" required>
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="col-md-6 mb-3">
+                            <label for="LastName" class="form-label">Last Name</label>
+                            <input type="text" id="LastName" asp-for="LastName" class="form-control" placeholder="Enter your last name" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Email -->
+                        <div class="col-md-6 mb-3">
+                            <label for="Email" class="form-label">Email</label>
+                            <input type="email" id="Email" asp-for="Email" class="form-control" placeholder="Enter your email" required>
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div class="col-md-6 mb-3">
+                            <label for="PhoneNumber" class="form-label">Phone Number</label>
+                            <input type="tel" id="PhoneNumber" asp-for="PhoneNumber" class="form-control" placeholder="Enter your phone number" required>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label for="Password" class="form-label">Password</label>
+                        <input type="password" id="Password" asp-for="Password" class="form-control" placeholder="Enter a password" required>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="mb-3">
+                        <label for="ConfirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" id="ConfirmPassword" asp-for="ConfirmPassword" class="form-control" placeholder="Confirm your password" required>
+                    </div>
+
+                    <!-- Terms Checkbox -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" id="Terms" asp-for="Terms" class="form-check-input" required>
+                        <label for="Terms" class="form-check-label">
+                            I agree to the <a href="#" class="text-decoration-none">Terms and Conditions</a>
+                        </label>
+                    </div>
+
+                    <!-- Google reCAPTCHA -->
+                    <div class="mb-3 text-center">
+                        <div class="g-recaptcha" data-sitekey="@ViewData["SiteKey"]"></div>
+                        <!-- Hidden Field for reCAPTCHA Token -->
+                        <input type="hidden" id="g-recaptcha-response" asp-for="gRecaptchaResponse">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-success w-100">Register</button>
+
+                    <!-- Already have an account? -->
+                    <div class="text-center mt-3">
+                        Already have an account? <a asp-action="Login" class="text-decoration-none">Login here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Google reCAPTCHA Script -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+

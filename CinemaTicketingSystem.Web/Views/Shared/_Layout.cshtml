@@ -26,14 +26,11 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Movie" asp-action="Index">Movies</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Reservation" asp-action="Index">Reservations</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="About">About</a>
-                        </li>
                         @if (User.Identity.IsAuthenticated)
                         {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Reservation" asp-action="Index">Reservations</a>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Account" asp-action="Logout">Logout</a>
                             </li>
@@ -42,6 +39,9 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Register">Register</a>
                             </li>
                         }
                     </ul>
@@ -83,6 +83,7 @@
             <p>&copy; 2024 Cinema Ticket System. All Rights Reserved.</p>
             <p>
                 <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a> |
+                <a asp-controller="Home" asp-action="About">About</a> |
                 <a asp-controller="Home" asp-action="Contact">Contact Us</a>
             </p>
         </div>
