@@ -22,7 +22,7 @@ namespace CinemaTicketingSystem.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(string Username, string Password, bool RememberMe)
+        public IActionResult Login(LoginVM model)
         {
 
             string Response = Request.Form["g-recaptcha-response"];
@@ -35,7 +35,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                 return View();
             }
 
-            if (Username == "admin" && Password == "password") // Placeholder logic
+            if (model.Username == "admin" && model.Password == "password") // Placeholder logic
             {
                 return RedirectToAction("Index", "Home");
             }
