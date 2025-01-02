@@ -1,20 +1,28 @@
-﻿using CinemaTicketingSystem.Domain.Entities;
+﻿using CinemaTicketingSystem.Application.Common.Interfaces;
+using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Web.ViewModels;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CinemaTicketingSystem.Web.Controllers
 {
     public class MovieController : Controller
     {
-        private readonly ApplicationDbContext _db;
-        public MovieController(ApplicationDbContext db)
+        private readonly IMovieRepository _movieRepository;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public MovieController(IMovieRepository movieRepository, IWebHostEnvironment webHostEnvironment)
         {
-            _db = db;
+            _movieRepository = movieRepository;
+            _webHostEnvironment = webHostEnvironment;
         }
+
         public IActionResult Index()
         {
-            //var movies = _db.Movies.ToList();
+            //var movies = _movieRepository.GetAll();
+            //var latestMovies = movies.OrderByDescending(m => m.ReleaseDate).Take(9).ToList();
+
             // Sample Movie Data
             var movies = new List<Movie>
         {
@@ -103,20 +111,65 @@ namespace CinemaTicketingSystem.Web.Controllers
         {
             return View();
         }
+
         [HttpPost]
-        public IActionResult AddMovie(Movie movie)
+        public IActionResult AddMovie(AddMovieVM model)
         {
             if (ModelState.IsValid)
             {
-                // Add the movie to the database
+                string uniqueFileName = null;
+
+                if (model.Poster != null)
+                {
+                    // 📂 پوشه مقصد برای ذخیره پوستر فیلم
+                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images/movieImages");
+
+                    // 🛡️ اطمینان از وجود پوشه
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    // 📝 ساخت نام منحصربه‌فرد برای فایل
+                    uniqueFileName = Guid.NewGuid().ToString() + "_" + model.Poster.FileName;
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    // 💾 ذخیره فایل در مسیر مشخص
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        model.Poster.CopyTo(fileStream);
+                    }
+                }
+
+                // 🛠️ ساخت شیء Movie برای ذخیره در دیتابیس
+                var movie = new Movie
+                {
+                    Title = model.Title,
+                    Genre = model.Genre,
+                    Description = model.Description,
+                    Duration = model.Duration,
+                    ReleaseDate = model.ReleaseDate,
+                    Poster = uniqueFileName != null ? "/images/movieImages/" + uniqueFileName : null,
+                    TrailerUrl = model.TrailerUrl
+                };
+
+                // 🗃️ افزودن فیلم به دیتابیس
+                _movieRepository.Add(movie);
+                _movieRepository.Save();
+
                 return RedirectToAction("Index");
             }
-            return View();
+
+            ViewData["Error"] = "Please fill all required fields correctly.";
+            return View(model);
         }
+
+
         public IActionResult UpdateMovie()
         {
             return View();
         }
+
         [HttpPost]
         public IActionResult UpdateMovie(Movie movie)
         {

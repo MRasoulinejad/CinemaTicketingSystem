@@ -1,0 +1,65 @@
+﻿@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h2 class="mb-4">📊 Dashboard Overview</h2>
+
+<div class="row">
+    <!-- Movies -->
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header">🎥 Movies</div>
+            <div class="card-body">
+                <h5 class="card-title">@ViewData["MoviesCount"] Movies</h5>
+                <p class="card-text">Manage all movies available on the platform.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theatres -->
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">🏢 Theatres</div>
+            <div class="card-body">
+                <h5 class="card-title">@ViewData["TheatresCount"] Theatres</h5>
+                <p class="card-text">Manage all theatres in the system.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users -->
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-header">👤 Users</div>
+            <div class="card-body">
+                <h5 class="card-title">@ViewData["UsersCount"] Users</h5>
+                <p class="card-text">Manage registered users on the platform.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- ShowTimes -->
+    <div class="col-md-6">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-header">⏳ ShowTimes</div>
+            <div class="card-body">
+                <h5 class="card-title">@ViewData["ShowTimesCount"] ShowTimes</h5>
+                <p class="card-text">Manage all movie showtimes across theatres.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservations -->
+    <div class="col-md-6">
+        <div class="card text-white bg-secondary mb-3">
+            <div class="card-header">🎟️ Reservations</div>
+            <div class="card-body">
+                <h5 class="card-title">@ViewData["ReservationsCount"] Reservations</h5>
+                <p class="card-text">Track and manage reservations for each showtime.</p>
+            </div>
+        </div>
+    </div>
+</div>

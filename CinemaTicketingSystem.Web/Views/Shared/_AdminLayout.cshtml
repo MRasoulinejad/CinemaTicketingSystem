@@ -1,0 +1,57 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/css/admin-dashboard.css">
+</head>
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- 🟦 Sidebar -->
+        <div class="bg-dark text-white" id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4 fs-4 fw-bold border-bottom">🎬 Admin Panel</div>
+            <div class="list-group list-group-flush">
+                <a asp-controller="Admin" asp-action="Index" class="list-group-item list-group-item-action text-white bg-dark">🏠 Dashboard</a>
+                <a asp-controller="ShowTime" asp-action="Index" class="list-group-item list-group-item-action text-white bg-dark">⏳ Manage ShowTimes</a>
+                <a asp-controller="Reservation" asp-action="Index" class="list-group-item list-group-item-action text-white bg-dark">🎟️ Manage Reservations</a>
+                <a asp-controller="Movie" asp-action="Index" class="list-group-item list-group-item-action text-white bg-dark">🎥 Manage Movies</a>
+                <a asp-controller="Theatre" asp-action="Index" class="list-group-item list-group-item-action text-white bg-dark">🏢 Manage Theatres</a>
+                <a asp-controller="User" asp-action="Index" class="list-group-item list-group-item-action text-white bg-dark">👤 Manage Users</a>
+                <a asp-controller="Account" asp-action="Logout" class="list-group-item list-group-item-action text-white bg-dark">🚪 Logout</a>
+            </div>
+        </div>
+
+        <!-- 🟩 Page Content -->
+        <div id="page-content-wrapper" class="w-100">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <div class="container-fluid">
+                    <button class="btn btn-primary" id="menu-toggle">☰ Menu</button>
+                    <h5 class="ms-3">Admin Dashboard</h5>
+                </div>
+            </nav>
+
+            <div class="container-fluid p-4">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle sidebar
+        const toggleButton = document.getElementById('menu-toggle');
+        const wrapper = document.getElementById('wrapper');
+        toggleButton.addEventListener('click', () => {
+            wrapper.classList.toggle('toggled');
+        });
+    </script>
+</body>
+</html>

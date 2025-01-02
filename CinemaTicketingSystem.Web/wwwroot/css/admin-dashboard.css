@@ -1,0 +1,108 @@
+﻿/* 🎯 Admin Dashboard Styles */
+
+/* Sidebar */
+#sidebar-wrapper {
+    min-width: 250px;
+    max-width: 250px;
+    height: 100vh;
+    overflow-y: auto;
+    transition: all 0.3s;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+    margin-left: -250px;
+}
+
+/* Sidebar Links */
+#sidebar-wrapper .list-group-item {
+    border: none;
+    padding: 15px 20px;
+}
+
+    #sidebar-wrapper .list-group-item:hover {
+        background-color: #495057;
+    }
+
+/* Content Area */
+#page-content-wrapper {
+    width: 100%;
+    transition: all 0.3s;
+}
+
+/* Navbar */
+.navbar {
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Page Container */
+.container-fluid {
+    margin-top: 20px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: -250px;
+    }
+
+    #wrapper.toggled #sidebar-wrapper {
+        margin-left: 0;
+    }
+}
+
+/* 🎯 Admin Dashboard Styling Updates */
+
+/* Card Styling */
+.card {
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+/* Colors for new cards */
+.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.card .card-body {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+
+/* 🎥 Add Movie Page Styling */
+
+/* Main Card Styling */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+/* Input Fields */
+.form-control {
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+/* Textarea */
+textarea.form-control {
+    resize: none;
+}
+
+/* Upload Poster Preview */
+#posterPreview {
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    object-fit: cover;
+}

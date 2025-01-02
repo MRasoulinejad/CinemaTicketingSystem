@@ -26,6 +26,11 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Movie" asp-action="Index">Movies</a>
                         </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Admin" asp-action="Index">🛠️ Admin Panel</a>
+                        </li>
+
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
@@ -50,7 +55,7 @@
         </nav>
     </header>
 
-   @*  <!-- 🟩 Hero Section -->
+    @*  <!-- 🟩 Hero Section -->
     <section class="hero-section mb-4">
         <div class="container">
             <h1>Welcome to the Ultimate Cinema Experience</h1>
