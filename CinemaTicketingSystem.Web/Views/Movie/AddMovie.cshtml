@@ -4,75 +4,80 @@
     ViewData["Title"] = "Add Movie";
 }
 
-<h2 class="mb-4 text-center">➕ Add New Movie</h2>
 
-<form asp-action="AddMovie" method="post" enctype="multipart/form-data">
-    <div class="row g-4">
-        <!-- 🎥 اطلاعات اصلی فیلم -->
-        <div class="col-md-8">
-            <div class="card shadow-sm p-4 rounded">
-                <h4 class="mb-3">🎥 Movie Details</h4>
+<div class="container-custom">
+    <h2 class="mb-4 text-center">➕ Add New Movie</h2>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Title</label>
-                        <input type="text" asp-for="Title" class="form-control" placeholder="e.g., Inception" required />
+    <!-- Movie form -->
+    <form asp-action="AddMovie" method="post" enctype="multipart/form-data">
+        <div class="row g-4">
+            <!-- 🎥 Movie Details Section -->
+            <div class="col-md-8">
+                <div class="card shadow-sm p-4 rounded">
+                    <h4 class="mb-3">🎥 Movie Details</h4>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Title</label>
+                            <input type="text" asp-for="Title" class="form-control" placeholder="e.g., Inception" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Genre</label>
+                            <input type="text" asp-for="Genre" class="form-control" placeholder="e.g., Action, Drama" required />
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Genre</label>
-                        <input type="text" asp-for="Genre" class="form-control" placeholder="e.g., Action, Drama" required />
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Duration (min)</label>
+                            <input type="number" asp-for="Duration" class="form-control" placeholder="e.g., 120" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Release Date</label>
+                            <input type="date" asp-for="ReleaseDate" class="form-control" required />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Trailer URL</label>
+                        <input type="text" asp-for="TrailerUrl" class="form-control" placeholder="e.g., https://youtube.com/trailer" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Brief description of the movie"></textarea>
                     </div>
                 </div>
+            </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Duration (min)</label>
-                        <input type="number" asp-for="Duration" class="form-control" placeholder="e.g., 120" required />
+            <!-- 🖼️ Upload Poster Section -->
+            <div class="col-md-4">
+                <div class="card shadow-sm p-4 rounded text-center">
+                    <h4 class="mb-3">🖼️ Upload Poster</h4>
+                    <div class="mb-3">
+                        <label for="PosterFile" class="form-label">Poster</label>
+                        <input type="file" asp-for="Poster" id="PosterFile" class="form-control" accept="image/*" required />
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Release Date</label>
-                        <input type="date" asp-for="ReleaseDate" class="form-control" required />
+                    <div class="mb-3">
+                        <img id="posterPreview" src="https://via.placeholder.com/300x400" alt="Poster Preview" class="img-thumbnail mb-2" />
                     </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Trailer URL</label>
-                    <input type="text" asp-for="TrailerUrl" class="form-control" placeholder="e.g., https://youtube.com/trailer" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Brief description of the movie"></textarea>
+                    <p class="text-muted">Accepted formats: JPG, PNG. Max size: 2MB.</p>
                 </div>
             </div>
         </div>
 
-        <!-- 🖼️ آپلود پوستر فیلم -->
-        <div class="col-md-4">
-            <div class="card shadow-sm p-4 rounded text-center">
-                <h4 class="mb-3">🖼️ Upload Poster</h4>
-                <div class="mb-3">
-                    <label for="PosterFile" class="form-label">Poster</label>
-                    <input type="file" asp-for="Poster" id="PosterFile" class="form-control" accept="image/*" required />
-                </div>
-                <div class="mb-3">
-                    <img id="posterPreview" src="https://via.placeholder.com/300x400" alt="Poster Preview" class="img-thumbnail mb-2" style="width: 100%; height: auto;" />
-                </div>
-                <p class="text-muted">Accepted formats: JPG, PNG. Max size: 2MB.</p>
+        <!-- Submit button -->
+        <div class="row mt-4">
+            <div class="col-md-12 text-center">
+                <button type="submit" class="btn btn-success btn-lg px-5">Save Movie</button>
             </div>
         </div>
-    </div>
+    </form>
+</div>
 
-    <!-- دکمه ثبت -->
-    <div class="row mt-4">
-        <div class="col-md-12 text-center">
-            <button type="submit" class="btn btn-success btn-lg px-5">Save Movie</button>
-        </div>
-    </div>
-</form>
-
-<!-- 🛠️ پیش نمایش پوستر -->
+<!-- 🛠️ Poster Preview Script -->
 <script>
+    // Update the poster preview when a new image is selected
     document.getElementById('PosterFile').addEventListener('change', function (e) {
         const file = e.target.files[0];
         if (file) {

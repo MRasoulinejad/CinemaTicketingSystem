@@ -4,6 +4,7 @@ using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Web.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CinemaTicketingSystem.Web.Controllers
 {
@@ -46,8 +47,6 @@ namespace CinemaTicketingSystem.Web.Controllers
                 LatestMovies = latestMovies
             };
 
-
-
             ViewData["HeroImageUrl"] = "/images/movies-hero.jpg";
             ViewData["HeroTitle"] = "Explore Our Movie Collection";
             ViewData["HeroSubtitle"] = "Discover the latest blockbusters and timeless classics. Book your tickets now!";
@@ -82,28 +81,38 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
         }
 
-        public IActionResult Search(string query)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Search([FromBody] string searchTerm, int page = 1)
         {
-            if (query != null)
+            const int PageSize = 9;
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                // Sample Movie Data
-                var movies = new List<Movie>
-                {
-                   new Movie { MovieId = 1, Title = "Inception", Genre = "Sci-Fi", Duration = 148, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-1)), Poster = "/images/movie1.jpg", TrailerUrl = "https://www.youtube.com/embed/LifqWf0BAOA" },
-                    new Movie { MovieId = 2, Title = "Interstellar", Genre = "Adventure", Duration = 169, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-2)), Poster = "/images/movie2.jpg" },
-                    new Movie { MovieId = 3, Title = "Avengers: Endgame", Genre = "Action", Duration = 181, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-3)), Poster = "/images/movie3.jpg" },
-                    new Movie { MovieId = 4, Title = "The Batman", Genre = "Action", Duration = 155, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-4)), Poster = "/images/movie4.jpg" },
-                    new Movie { MovieId = 5, Title = "Spider-Man: No Way Home", Genre = "Adventure", Duration = 148, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-5)), Poster = "/images/movie5.jpg" },
-                    new Movie { MovieId = 6, Title = "Dune", Genre = "Sci-Fi", Duration = 155, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-6)), Poster = "/images/movie6.jpg" },
-                    new Movie { MovieId = 7, Title = "Shang-Chi", Genre = "Action", Duration = 132, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-7)), Poster = "/images/movie7.jpg" },
-                    new Movie { MovieId = 8, Title = "Tenet", Genre = "Sci-Fi", Duration = 150, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-8)), Poster = "/images/movie8.jpg" },
-                    new Movie { MovieId = 9, Title = "Joker", Genre = "Drama", Duration = 122, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-9)), Poster = "/images/movie9.jpg" }
-                };
+                // Get all movies
+                List<Movie> movies = _movieRepository.GetAll()
+                    .Where(x => x.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
 
-                var searchResults = movies.Where(m => m.Title.ToLower().Contains(query.ToLower())).ToList();
-                return View(searchResults);
+                var paginatedMovies = movies
+                .Skip((page - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
 
+                ViewData["CurrentPage"] = page;
+                ViewData["TotalPages"] = (int)Math.Ceiling((double)movies.Count / PageSize);
+
+
+                return PartialView("_MovieListPartial", paginatedMovies);
             }
+
+            return PartialView("_MovieListPartial", new List<Movie>());
+        }
+
+        public IActionResult ManageMovie()
+        {
+            //Get all movies
+            //var movies = _movieRepository.GetAll().ToList();
             return View();
         }
 
@@ -121,27 +130,27 @@ namespace CinemaTicketingSystem.Web.Controllers
 
                 if (model.Poster != null)
                 {
-                    // 📂 پوشه مقصد برای ذخیره پوستر فیلم
+                    // 📂 define the uploads folder path
                     var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images/movieImages");
 
-                    // 🛡️ اطمینان از وجود پوشه
+                    // 🛡️ make sure the folder exists
                     if (!Directory.Exists(uploadsFolder))
                     {
                         Directory.CreateDirectory(uploadsFolder);
                     }
 
-                    // 📝 ساخت نام منحصربه‌فرد برای فایل
+                    // 📝 make the file name unique
                     uniqueFileName = Guid.NewGuid().ToString() + "_" + model.Poster.FileName;
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                    // 💾 ذخیره فایل در مسیر مشخص
+                    // 💾 save the file to the server
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
                         model.Poster.CopyTo(fileStream);
                     }
                 }
 
-                // 🛠️ ساخت شیء Movie برای ذخیره در دیتابیس
+                // 🛠️ map the view model to the domain model
                 var movie = new Movie
                 {
                     Title = model.Title,
@@ -153,7 +162,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                     TrailerUrl = model.TrailerUrl
                 };
 
-                // 🗃️ افزودن فیلم به دیتابیس
+                // 🗃️ Add the movie to the database
                 _movieRepository.Add(movie);
                 _movieRepository.Save();
 
@@ -180,15 +189,46 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
             return View();
         }
-        public IActionResult DeleteMovie(int id)
-        {
-            return View();
-        }
+
         [HttpPost]
-        public IActionResult DeleteMovie(Movie movie)
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteMovie([FromBody]int id)
         {
-            // Delete the movie from the database
-            return RedirectToAction("Index");
+            // 🟢 Retrieve the movie record from the repository
+            Movie movie = _movieRepository.Get(x => x.MovieId == id);
+
+            if (movie == null)
+            {
+                return Json(new { success = false, message = "Movie not found." });
+            }
+
+            // 🖼️ Delete the poster file if it exists
+            if (!string.IsNullOrEmpty(movie.Poster))
+            {
+                // Ensure the path starts without a slash
+                var posterRelativePath = movie.Poster.TrimStart('/');
+
+                // Build the absolute path to the poster
+                var posterPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", posterRelativePath);
+
+                if (System.IO.File.Exists(posterPath))
+                {
+                    try
+                    {
+                        System.IO.File.Delete(posterPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        return Json(new { success = false, message = $"Failed to delete poster: {ex.Message}" });
+                    }
+                }
+            }
+
+            // 🗑️ Remove the movie record from the database
+            _movieRepository.Remove(movie);
+            _movieRepository.Save();
+
+            return Json(new { success = true });
         }
 
     }

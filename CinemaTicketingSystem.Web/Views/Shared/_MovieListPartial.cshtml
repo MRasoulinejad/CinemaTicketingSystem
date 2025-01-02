@@ -1,0 +1,60 @@
+﻿@model IEnumerable<CinemaTicketingSystem.Domain.Entities.Movie>
+@{
+    int currentPage = (int)(ViewData["CurrentPage"] ?? 1);
+    int totalPages = (int)(ViewData["TotalPages"] ?? 1);
+}
+
+
+@Html.AntiForgeryToken()
+
+
+<!-- 🎬 Movie Cards Section -->
+<div class="search-result-container">
+    @if (Model.Any())
+    {
+        @foreach (var movie in Model)
+        {
+            <div class="search-result-card">
+                <div class="movie-poster">
+                    <img src="@movie.Poster" alt="@movie.Title Poster">
+                </div>
+                <div class="movie-info">
+                    <h5 class="movie-title">@movie.Title</h5>
+                    <p class="movie-genre"><strong>Genre:</strong> @movie.Genre</p>
+                    <p class="movie-duration"><strong>Duration:</strong> @movie.Duration min</p>
+                    <p class="movie-release"><strong>Release Date:</strong> @movie.ReleaseDate.ToShortDateString()</p>
+                </div>
+                <div class="movie-actions">
+                    <a asp-action="Edit" asp-route-id="@movie.MovieId" class="btn btn-sm btn-warning">Edit</a>
+                    <button class="btn btn-sm btn-danger" onclick="confirmDelete('@movie.MovieId', '@movie.Title')">Delete</button>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12 text-center">
+            <p class="text-muted">No movies found. Please try another search term.</p>
+        </div>
+    }
+</div>
+
+<!-- 📝 Pagination -->
+@if (totalPages > 1)
+{
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" href="javascript:void(0)" onclick="loadPage(@i)">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+
+
+
+
