@@ -353,3 +353,21 @@ textarea.form-control {
 .navbar .btn-outline-danger {
     font-size: 0.85rem;
 }
+
+
+
+/* 🎥 Update Movie Page Styles */
+
+.container {
+    max-width: 800px;
+}
+
+.card-header h5 {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.img-thumbnail {
+    margin: 10px 0;
+    border-radius: 8px;
+}

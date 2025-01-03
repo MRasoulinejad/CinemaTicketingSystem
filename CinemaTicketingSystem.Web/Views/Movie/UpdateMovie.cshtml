@@ -1,0 +1,107 @@
+﻿@model UpdateMovieVM
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Update Movie";
+}
+
+<h2 class="mb-4 text-center">🎥 Update Movie Details</h2>
+
+<div class="container">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">✏️ Edit Movie Information</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="UpdateMovie" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="MovieId" />
+
+                <!-- Title and Genre -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Title" class="form-label">🎬 Title</label>
+                        <input asp-for="Title" class="form-control" placeholder="Enter movie title" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Genre" class="form-label">🎭 Genre</label>
+                        <input asp-for="Genre" class="form-control" placeholder="Enter movie genre" />
+                        <span asp-validation-for="Genre" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Duration and Release Date -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Duration" class="form-label">⏳ Duration (in minutes)</label>
+                        <input asp-for="Duration" class="form-control" type="number" placeholder="Enter duration" />
+                        <span asp-validation-for="Duration" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ReleaseDate" class="form-label">📅 Release Date</label>
+                        <input asp-for="ReleaseDate" class="form-control" type="date" />
+                        <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">📝 Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter movie description"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <!-- Poster Upload -->
+                <div class="mb-3">
+                    <label class="form-label">🖼️ Movie Poster</label>
+                    <input type="file" asp-for="PosterFile" class="form-control" accept="image/*" />
+                    <div class="form-text">Upload a new movie poster (optional).</div>
+                </div>
+
+                <!-- Current Poster Preview -->
+                @if (!string.IsNullOrEmpty(Model?.Poster))
+                {
+                    <div class="mb-3 text-center">
+                        <label class="form-label">📸 Current Poster</label><br />
+                        <img src="@Model.Poster" alt="Movie Poster" class="img-thumbnail" style="width: 200px; height: 300px; object-fit: cover;" />
+                    </div>
+                }
+
+                <!-- Trailer URL -->
+                <div class="mb-3">
+                    <label asp-for="TrailerUrl" class="form-label">🎥 Trailer URL</label>
+                    <input asp-for="TrailerUrl" class="form-control" placeholder="Enter trailer URL (YouTube, Vimeo, etc.)" />
+                    <span asp-validation-for="TrailerUrl" class="text-danger"></span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="ManageMovie" class="btn btn-secondary">⬅️ Back to List</a>
+                    <button type="submit" class="btn btn-success">💾 Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Validation Summary -->
+<div class="mt-4">
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <strong>⚠️ Please correct the errors below:</strong>
+            <ul>
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+</div>
+
+@* @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.11/jquery.validate.unobtrusive.min.js"></script>
+} *@

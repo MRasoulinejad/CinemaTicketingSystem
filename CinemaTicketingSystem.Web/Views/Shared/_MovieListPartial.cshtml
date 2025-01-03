@@ -25,7 +25,7 @@
                     <p class="movie-release"><strong>Release Date:</strong> @movie.ReleaseDate.ToShortDateString()</p>
                 </div>
                 <div class="movie-actions">
-                    <a asp-action="Edit" asp-route-id="@movie.MovieId" class="btn btn-sm btn-warning">Edit</a>
+                    <a asp-action="UpdateMovie" asp-route-id="@movie.MovieId" class="btn btn-sm btn-warning">Edit</a>
                     <button class="btn btn-sm btn-danger" onclick="confirmDelete('@movie.MovieId', '@movie.Title')">Delete</button>
                 </div>
             </div>

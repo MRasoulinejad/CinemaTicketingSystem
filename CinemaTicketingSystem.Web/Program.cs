@@ -16,6 +16,7 @@ builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
 builder.Services.AddHttpClient();
 
 

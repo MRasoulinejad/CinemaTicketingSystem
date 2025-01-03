@@ -111,8 +111,6 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         public IActionResult ManageMovie()
         {
-            //Get all movies
-            //var movies = _movieRepository.GetAll().ToList();
             return View();
         }
 
@@ -166,7 +164,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                 _movieRepository.Add(movie);
                 _movieRepository.Save();
 
-                return RedirectToAction("Index");
+                return RedirectToAction("ManageMovie");
             }
 
             ViewData["Error"] = "Please fill all required fields correctly.";
@@ -174,20 +172,80 @@ namespace CinemaTicketingSystem.Web.Controllers
         }
 
 
-        public IActionResult UpdateMovie()
+        public IActionResult UpdateMovie(int id)
         {
-            return View();
+            Movie movie = _movieRepository.Get(x => x.MovieId == id);
+            UpdateMovieVM updateMovieVM = new UpdateMovieVM
+            {
+                MovieId = movie.MovieId,
+                Title = movie.Title,
+                Genre = movie.Genre,
+                Description = movie.Description,
+                Duration = movie.Duration,
+                ReleaseDate = movie.ReleaseDate,
+                Poster = movie.Poster,
+                TrailerUrl = movie.TrailerUrl
+            };
+
+            return View(updateMovieVM);
         }
 
         [HttpPost]
-        public IActionResult UpdateMovie(Movie movie)
+        public IActionResult UpdateMovie(UpdateMovieVM movie)
         {
+
             if (ModelState.IsValid)
             {
-                // Update the movie in the database
-                return RedirectToAction("Index");
+                // Retrieve the existing movie from the database
+                var existingMovie = _movieRepository.Get(x => x.MovieId == movie.MovieId);
+
+                if (existingMovie == null)
+                {
+                    return NotFound();
+                }
+
+                // Update basic properties
+                existingMovie.Title = movie.Title;
+                existingMovie.Genre = movie.Genre;
+                existingMovie.Description = movie.Description;
+                existingMovie.Duration = movie.Duration;
+                existingMovie.ReleaseDate = movie.ReleaseDate;
+                existingMovie.TrailerUrl = movie.TrailerUrl;
+
+                // Handle poster upload if a new file is provided
+                if (movie.PosterFile != null)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/movieImages");
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + movie.PosterFile.FileName;
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        movie.PosterFile.CopyTo(fileStream);
+                    }
+
+                    // Delete old poster if it exists
+                    if (!string.IsNullOrEmpty(existingMovie.Poster))
+                    {
+                        var oldPosterPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existingMovie.Poster.TrimStart('/'));
+                        if (System.IO.File.Exists(oldPosterPath))
+                        {
+                            System.IO.File.Delete(oldPosterPath);
+                        }
+                    }
+
+                    // Update the new poster path
+                    existingMovie.Poster = "/images/movieImages/" + uniqueFileName;
+                }
+
+                // Save the updated movie
+                _movieRepository.Update(existingMovie);
+                _movieRepository.Save();
+
+                return RedirectToAction("ManageMovie");
             }
-            return View();
+
+            return View(movie);
         }
 
         [HttpPost]
