@@ -11,60 +11,12 @@ using System.Threading.Tasks;
 
 namespace CinemaTicketingSystem.Infrastructure.Repository
 {
-    public class MovieRepository : IMovieRepository
+    public class MovieRepository : Repository<Movie>, IMovieRepository
     {
         private readonly ApplicationDbContext _db;
-        public MovieRepository(ApplicationDbContext db)
+        public MovieRepository(ApplicationDbContext db) : base(db)
         {
             _db = db;
-        }
-
-        public void Add(Movie entity)
-        {
-            _db.Add(entity);
-        }
-
-        public Movie Get(Expression<Func<Movie, bool>> filter, string includeProperties = null)
-        {
-            IQueryable<Movie> query = _db.Set<Movie>();
-
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
-            if (!string.IsNullOrEmpty(includeProperties))
-            {
-                foreach (var includeProperty in includeProperties
-                    .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(includeProperty);
-                }
-            }
-            return query.FirstOrDefault();
-        }
-
-        public IEnumerable<Movie> GetAll(Expression<Func<Movie, bool>>? filter = null, string includeProperties = null)
-        {
-            IQueryable<Movie> query = _db.Set<Movie>();
-
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
-            if (!string.IsNullOrEmpty(includeProperties))
-            {
-                foreach (var includeProperty in includeProperties
-                    .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(includeProperty);
-                }
-            }
-            return query.ToList();
-        }
-
-        public void Remove(Movie entity)
-        {
-            _db.Remove(entity);
         }
 
         public void Save()

@@ -8,13 +8,9 @@ using System.Threading.Tasks;
 
 namespace CinemaTicketingSystem.Application.Common.Interfaces
 {
-    public interface IMovieRepository
+    public interface IMovieRepository : IRepository<Movie>
     {
-        IEnumerable<Movie> GetAll(Expression<Func<Movie, bool>>? filter = null, string includeProperties = null );
-        Movie Get(Expression<Func<Movie, bool>> filter, string includeProperties = null );
-        void Add(Movie entity);
         void Update(Movie entity);
-        void Remove(Movie entity);
         void Save();
     }
 }
