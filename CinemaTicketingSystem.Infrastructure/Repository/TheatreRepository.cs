@@ -1,30 +1,26 @@
 ﻿using CinemaTicketingSystem.Application.Common.Interfaces;
+using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CinemaTicketingSystem.Infrastructure.Repository
 {
-    public class UnitOfWork : IUnitOfWork
+    public class TheatreRepository : Repository<Theatre>, ITheatreRepository
     {
         private readonly ApplicationDbContext _db;
-        public IMovieRepository Movies { get; private set; }
-
-        public ITheatreRepository Theatres { get; private set; }
-
-        public UnitOfWork(ApplicationDbContext db)
+        public TheatreRepository(ApplicationDbContext db) : base(db)
         {
             _db = db;
-            Movies = new MovieRepository(_db);
-            Theatres = new TheatreRepository(_db);
         }
 
-        public void Save()
+        public void Update(Theatre entity)
         {
-            _db.SaveChanges();
+            _db.Update(entity);
         }
     }
 }

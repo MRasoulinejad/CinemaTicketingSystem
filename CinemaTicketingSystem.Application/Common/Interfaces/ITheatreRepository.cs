@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CinemaTicketingSystem.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace CinemaTicketingSystem.Application.Common.Interfaces
 {
-    public interface IUnitOfWork
+    public interface ITheatreRepository : IRepository<Theatre>
     {
-        IMovieRepository Movies { get; }
-        ITheatreRepository Theatres { get; }
-        void Save();
+        void Update(Theatre entity);
     }
 }
