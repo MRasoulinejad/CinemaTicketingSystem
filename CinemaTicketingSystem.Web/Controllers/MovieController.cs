@@ -162,7 +162,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
                 // 🗃️ Add the movie to the database
                 _unitOfWork.Movies.Add(movie);
-                _unitOfWork.Movies.Save();
+                _unitOfWork.Save();
 
                 return RedirectToAction("ManageMovie");
             }
@@ -240,7 +240,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
                 // Save the updated movie
                 _unitOfWork.Movies.Update(existingMovie);
-                _unitOfWork.Movies.Save();
+                _unitOfWork.Save();
 
                 return RedirectToAction("ManageMovie");
             }
@@ -284,7 +284,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
             // 🗑️ Remove the movie record from the database
             _unitOfWork.Movies.Remove(movie);
-            _unitOfWork.Movies.Save();
+            _unitOfWork.Save();
 
             return Json(new { success = true });
         }

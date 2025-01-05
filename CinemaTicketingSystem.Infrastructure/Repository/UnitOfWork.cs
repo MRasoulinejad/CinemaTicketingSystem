@@ -17,5 +17,10 @@ namespace CinemaTicketingSystem.Infrastructure.Repository
             _db = db;
             Movies = new MovieRepository(_db);
         }
+
+        public void Save()
+        {
+            _db.SaveChanges();
+        }
     }
 }

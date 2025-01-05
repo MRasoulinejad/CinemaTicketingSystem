@@ -9,5 +9,6 @@ namespace CinemaTicketingSystem.Application.Common.Interfaces
     public interface IUnitOfWork
     {
         IMovieRepository Movies { get; }
+        void Save();
     }
 }

@@ -19,11 +19,6 @@ namespace CinemaTicketingSystem.Infrastructure.Repository
             _db = db;
         }
 
-        public void Save()
-        {
-            _db.SaveChanges();
-        }
-
         public void Update(Movie entity)
         {
             _db.Update(entity);

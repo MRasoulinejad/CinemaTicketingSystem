@@ -11,6 +11,5 @@ namespace CinemaTicketingSystem.Application.Common.Interfaces
     public interface IMovieRepository : IRepository<Movie>
     {
         void Update(Movie entity);
-        void Save();
     }
 }
