@@ -10,12 +10,12 @@ namespace CinemaTicketingSystem.Web.Controllers
 {
     public class MovieController : Controller
     {
-        private readonly IMovieRepository _movieRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public MovieController(IMovieRepository movieRepository, IWebHostEnvironment webHostEnvironment)
+        public MovieController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
         {
-            _movieRepository = movieRepository;
+            _unitOfWork = unitOfWork;
             _webHostEnvironment = webHostEnvironment;
         }
 
@@ -90,7 +90,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 // Get all movies
-                List<Movie> movies = _movieRepository.GetAll()
+                List<Movie> movies = _unitOfWork.Movies.GetAll()
                     .Where(x => x.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
@@ -161,8 +161,8 @@ namespace CinemaTicketingSystem.Web.Controllers
                 };
 
                 // 🗃️ Add the movie to the database
-                _movieRepository.Add(movie);
-                _movieRepository.Save();
+                _unitOfWork.Movies.Add(movie);
+                _unitOfWork.Movies.Save();
 
                 return RedirectToAction("ManageMovie");
             }
@@ -174,7 +174,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         public IActionResult UpdateMovie(int id)
         {
-            Movie movie = _movieRepository.Get(x => x.MovieId == id);
+            Movie movie = _unitOfWork.Movies.Get(x => x.MovieId == id);
             UpdateMovieVM updateMovieVM = new UpdateMovieVM
             {
                 MovieId = movie.MovieId,
@@ -197,7 +197,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             if (ModelState.IsValid)
             {
                 // Retrieve the existing movie from the database
-                var existingMovie = _movieRepository.Get(x => x.MovieId == movie.MovieId);
+                var existingMovie = _unitOfWork.Movies.Get(x => x.MovieId == movie.MovieId);
 
                 if (existingMovie == null)
                 {
@@ -239,8 +239,8 @@ namespace CinemaTicketingSystem.Web.Controllers
                 }
 
                 // Save the updated movie
-                _movieRepository.Update(existingMovie);
-                _movieRepository.Save();
+                _unitOfWork.Movies.Update(existingMovie);
+                _unitOfWork.Movies.Save();
 
                 return RedirectToAction("ManageMovie");
             }
@@ -253,7 +253,7 @@ namespace CinemaTicketingSystem.Web.Controllers
         public IActionResult DeleteMovie([FromBody]int id)
         {
             // 🟢 Retrieve the movie record from the repository
-            Movie movie = _movieRepository.Get(x => x.MovieId == id);
+            Movie movie = _unitOfWork.Movies.Get(x => x.MovieId == id);
 
             if (movie == null)
             {
@@ -283,8 +283,8 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
 
             // 🗑️ Remove the movie record from the database
-            _movieRepository.Remove(movie);
-            _movieRepository.Save();
+            _unitOfWork.Movies.Remove(movie);
+            _unitOfWork.Movies.Save();
 
             return Json(new { success = true });
         }
