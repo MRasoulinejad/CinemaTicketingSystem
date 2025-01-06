@@ -1,6 +1,8 @@
 ﻿using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Repository;
+using CinemaTicketingSystem.Web.ViewModels;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CinemaTicketingSystem.Web.Controllers
@@ -8,9 +10,11 @@ namespace CinemaTicketingSystem.Web.Controllers
     public class TheatreController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
-        public TheatreController(IUnitOfWork unitOfWork)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public TheatreController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
         {
             _unitOfWork = unitOfWork;
+            _webHostEnvironment = webHostEnvironment;
         }
         public IActionResult Index()
         {
@@ -19,10 +23,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         public IActionResult ManageTheatre()
         {
-            var theatres = _unitOfWork.Theatres.GetAll().Take(9).ToList();
-            ViewData["CurrentPage"] = 1;
-            ViewData["TotalPages"] = (int)Math.Ceiling(_unitOfWork.Theatres.GetAll().Count() / 9.0);
-            return View(theatres);
+            return View();
         }
 
         public IActionResult Details(int id)
@@ -37,14 +38,52 @@ namespace CinemaTicketingSystem.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateTheatre(Theatre theatre)
+        public IActionResult CreateTheatre(AddTheatreVM model)
         {
             if (ModelState.IsValid)
             {
-                // Add the theatre to the database
-                return RedirectToAction("Index");
+                string uniqueFileName = null;
+
+                if (model.TheatreImage != null)
+                {
+                    // 📂 define the uploads folder path
+                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images/TheatreImages");
+
+                    // 🛡️ make sure the folder exists
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    // 📝 make the file name unique
+                    uniqueFileName = Guid.NewGuid().ToString() + "_" + model.TheatreImage.FileName;
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    // 💾 save the file to the server
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        model.TheatreImage.CopyTo(fileStream);
+                    }
+                }
+
+                // 🛠️ map the view model to the domain model
+                var theatre = new Theatre
+                {
+                    TheatreName = model.TheatreName,
+                    TotalSeats = model.TotalSeats,
+                    Location = model.Location,
+                    TheatreImage = uniqueFileName != null ? "/images/TheatreImages/" + uniqueFileName : null
+                };
+                
+                // 🗃️ Add the movie to the database
+                _unitOfWork.Theatres.Add(theatre);
+                _unitOfWork.Save();
+
+                return RedirectToAction("ManageTheatre");
             }
-            return View();
+
+            ViewData["Error"] = "Please fill all required fields correctly.";
+            return View(model);
         }
 
         public IActionResult UpdateTheatre(int theatreId)

@@ -1,0 +1,81 @@
+﻿@model AddTheatreVM
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Add Theatre";
+}
+
+
+<div class="container-custom">
+    <h2 class="mb-4 text-center">➕ Add New Theatre</h2>
+
+    <!-- Movie form -->
+    <form asp-action="CreateTheatre" method="post" enctype="multipart/form-data">
+        <div class="row g-4" >
+            <!-- 🎥 Movie Details Section -->
+            <div class="col-md-8">
+                <div class="card shadow-sm p-4 rounded">
+                    <h4 class="mb-3">🎥 Theatre Details</h4>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Title</label>
+                            <input type="text" asp-for="TheatreName" class="form-control" placeholder="e.g., Grand Cinema" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Total Seats</label>
+                            <input type="number" asp-for="TotalSeats" class="form-control" placeholder="e.g., 250" required />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Location</label>
+                            <input type="text" asp-for="Location" class="form-control" placeholder="e.g., Downtown Center" required />
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 🖼️ Upload Poster Section -->
+            <div class="col-md-4">
+                <div class="card shadow-sm p-4 rounded text-center">
+                    <h4 class="mb-3">🖼️ Upload Image</h4>
+                    <div class="mb-3">
+                        <label for="PosterFile" class="form-label">Theatre Image</label>
+                        <input type="file" asp-for="TheatreImage" id="PosterFile" class="form-control" accept="image/*" required />
+                    </div>
+                    <div class="mb-3">
+                        <img id="posterPreview" src="https://via.placeholder.com/300x400" alt="Poster Preview" class="img-thumbnail mb-2" />
+                    </div>
+                    <p class="text-muted">Accepted formats: JPG, PNG. Max size: 2MB.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit button -->
+        <div class="row mt-4">
+            <div class="col-md-12 text-center">
+                <button type="submit" class="btn btn-success btn-lg px-5">Save Theatre</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<!-- 🛠️ Poster Preview Script -->
+<script>
+    // Update the poster preview when a new image is selected
+    document.getElementById('PosterFile').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                document.getElementById('posterPreview').src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+

@@ -13,10 +13,14 @@ namespace CinemaTicketingSystem.Domain.Entities
         [Key]
         public int SeatId { get; set; }
         [Required]
+        public string Row { get; set; }
+        [Required]
         public string SeatNumber { get; set; }
         [Required]
-        public int TheatreId { get; set; }
-        [ForeignKey("TheatreId")]
-        public Theatre Theatre { get; set; }
+        public bool IsReserved { get; set; }
+        [Required]
+        public int HallId { get; set; }
+        [ForeignKey("HallId")]
+        public Hall Hall { get; set; }
     }
 }

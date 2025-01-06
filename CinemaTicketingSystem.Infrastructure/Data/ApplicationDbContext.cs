@@ -18,6 +18,7 @@ namespace CinemaTicketingSystem.Infrastructure.Data
         public DbSet<Movie> Movies { get; set; }
         public DbSet<Theatre> Theatres { get; set; }
         public DbSet<Seat> Seats { get; set; }
+        public DbSet<Hall> Halls { get; set; }
         public DbSet<ShowTime> ShowTimes { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Payment> Payments { get; set; }

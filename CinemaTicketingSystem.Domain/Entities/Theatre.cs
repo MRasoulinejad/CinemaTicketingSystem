@@ -18,6 +18,10 @@ namespace CinemaTicketingSystem.Domain.Entities
         [Required]
         public string Location { get; set; }
         [Required]
+        public string Description { get; set; }
+        [Required]
         public string TheatreImage { get; set; }
+
+        public List<Hall> Halls { get; set; } = new List<Hall>();
     }
 }
