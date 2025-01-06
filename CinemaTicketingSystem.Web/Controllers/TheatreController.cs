@@ -86,6 +86,24 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Search([FromBody] string searchTerm)
+        {
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                // Get all movies
+                List<Theatre> theatres = _unitOfWork.Theatres.GetAll()
+                    .Where(x => x.TheatreName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                return PartialView("_TheatreListPartial", theatres);
+            }
+
+            return PartialView("_TheatreListPartial", new List<Theatre>());
+        }
+
         public IActionResult UpdateTheatre(int theatreId)
         {
             return View();

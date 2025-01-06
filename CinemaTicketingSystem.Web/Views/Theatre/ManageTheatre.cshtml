@@ -5,48 +5,61 @@
 
 @Html.AntiForgeryToken()
 
+<div class="container-custom py-4">
+    <h2 class="mb-5 text-center fw-bold">🎬 Manage Theatres</h2>
 
-
-<div class="container-custom">
-    <h2 class="mb-4 text-center">🎬 Manage Theatres</h2>
-
-    <div class="row">
-        <!-- 🟦 Search Theatre section -->
-        <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">🔍 Search Theatres</div>
-                <div class="card-body">
-                    <input type="text" id="searchTheatre" class="form-control mb-2" placeholder="Search by Title...">
-                    <button onclick="searchTheatre()" class="btn btn-primary w-50">Search</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 🟩 Add a new Theatre -->
-        <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-success text-white">➕ Add Theatre</div>
-                <div class="card-body text-center">
-                    <p>Add a new Theatre to the system.</p>
-                    <a asp-action="CreateTheatre" class="btn btn-success w-100">Add Theatre</a>
+    <!-- 🔍 Search Section (Centered on the row) -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <div class="card shadow-lg rounded-4 border-0">
+                <div class="card-header bg-primary text-white text-center fw-bold">🔍 Search Theatres</div>
+                <div class="card-body d-flex gap-2 justify-content-center align-items-center">
+                    <input type="text" id="searchTheatre" class="form-control" placeholder="Search by Title..." />
+                    <button onclick="searchTheatre()" class="btn btn-primary px-4">Search</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 📝 Show Theatre list -->
-    <div class="card shadow-sm" style="display: none" id="TheatreListSec">
-        <div class="card-header bg-dark text-white">📋 Theatre List</div>
+    <!-- ➕ Add Sections -->
+    <div class="row g-4">
+        <!-- 🎭 Add Theatre -->
+        <div class="col-md-6">
+            <div class="card shadow-lg rounded-4 border-0">
+                <div class="card-header bg-success text-white text-center fw-bold">➕ Add Theatre</div>
+                <div class="card-body text-center">
+                    <p class="text-muted">Easily add a new theatre to the system.</p>
+                    <a asp-action="CreateTheatre" class="btn btn-success w-75">Add Theatre</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🏢 Add Hall -->
+        <div class="col-md-6">
+            <div class="card shadow-lg rounded-4 border-0">
+                <div class="card-header bg-secondary text-white text-center fw-bold">➕ Add Hall</div>
+                <div class="card-body text-center">
+                    <p class="text-muted">Add a new hall to an existing theatre.</p>
+                    <a asp-action="CreateHall" class="btn btn-secondary w-75">Add Hall</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📝 Show theatre list -->
+    <div class="card shadow-sm" style="display: none" id="theatreListSec">
+        <div class="card-header bg-dark text-white">📋 theatre List</div>
         <!-- 🟢 Success Message -->
         <div id="successMessage" class="alert alert-success text-center mt-3 d-none" role="alert">
-            Theatre deleted successfully!
+            theatre deleted successfully!
         </div>
         <div class="card-body">
-            <div id="TheatreList">
+            <div id="theatreList">
                 <!-- Search results will be here -->
             </div>
         </div>
     </div>
+
 </div>
 
 <!-- 🛑 Delete Confirmation Modal -->
@@ -58,7 +71,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Are you sure you want to delete the Theatre <strong id="TheatreTitle"></strong>?
+                Are you sure you want to delete the theatre <strong id="theatreTitle"></strong>?
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -69,14 +82,11 @@
 </div>
 
 
-
-
-
 <!-- 🛠️ Search Script -->
 <script>
         function searchTheatre() {
         // Hide the div before starting the search
-        document.getElementById('TheatreListSec').style.display = 'none';
+        document.getElementById('theatreListSec').style.display = 'none';
 
         var searchTerm = document.getElementById('searchTheatre').value;
         fetch('@Url.Action("Search", "Theatre")', {
@@ -94,19 +104,19 @@
             return response.text();
         })
         .then(html => {
-            document.getElementById('TheatreList').innerHTML = html;
+            document.getElementById('theatreList').innerHTML = html;
             // Show the div after getting the search results
-            document.getElementById('TheatreListSec').style.display = 'block';
+            document.getElementById('theatreListSec').style.display = 'block';
         })
         .catch(error => {
             console.error('Error:', error);
             // In case of error, you might want to show the div again
-            document.getElementById('TheatreListSec').style.display = 'block';
+            document.getElementById('theatreListSec').style.display = 'block';
         });
         }
 
         function loadPage(page) {
-        fetch(`@Url.Action("Manage", "Theatre")?page=${page}`, {
+        fetch(`@Url.Action("Manage", "theatre")?page=${page}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -114,7 +124,7 @@
         })
         .then(response => response.text())
         .then(html => {
-            document.getElementById('TheatreList').innerHTML = html;
+            document.getElementById('theatreList').innerHTML = html;
         })
         .catch(error => console.error('Error:', error));
     }
@@ -122,12 +132,12 @@
 
 
 <script>
-           let selectedTheatreId = null; // Stores the selected Theatre ID
+           let selectedtheatreId = null; // Stores the selected theatre ID
 
-    // 🟢 Show confirmation modal with dynamic Theatre details
-    function confirmDelete(TheatreId, TheatreTitle) {
-        selectedTheatreId = TheatreId; // Store the selected Theatre ID
-        document.getElementById('TheatreTitle').innerText = TheatreTitle; // Display the Theatre title in the modal
+    // 🟢 Show confirmation modal with dynamic theatre details
+    function confirmDelete(theatreId, theatreTitle) {
+        selectedtheatreId = theatreId; // Store the selected theatre ID
+        document.getElementById('theatreTitle').innerText = theatreTitle; // Display the theatre title in the modal
 
         // Initialize and display the Bootstrap modal
         const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
@@ -136,20 +146,20 @@
 
     // 🛑 Handle Confirm Delete Button Click
     document.getElementById('confirmDeleteButton').addEventListener('click', function () {
-        if (!selectedTheatreId) return; // Ensure a Theatre ID is selected
+        if (!selectedtheatreId) return; // Ensure a theatre ID is selected
 
         // Send a POST request with the ID directly as text
-        fetch('@Url.Action("DeleteTheatre", "Theatre")', {
+        fetch('@Url.Action("Deletetheatre", "theatre")', {
             method: 'POST', // HTTP POST method
             headers: {
                 'Content-Type': 'application/json', // Specify JSON content type
                 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value // Include CSRF token
             },
-            body: selectedTheatreId.toString() // Send the Theatre ID as a plain integer string
+            body: selectedtheatreId.toString() // Send the theatre ID as a plain integer string
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to delete Theatre.'); // Handle non-OK responses
+                throw new Error('Failed to delete theatre.'); // Handle non-OK responses
             }
             return response.json(); // Parse the response as JSON
         })
@@ -166,21 +176,26 @@
                 // Hide the success message after 2 seconds and reload the page
                 setTimeout(() => {
                     successMessage.classList.add('d-none');
-                    location.reload(); // Refresh the Theatre list
+                    location.reload(); // Refresh the theatre list
                 }, 2000);
             } else {
                 // Show an alert if the server returned an error
-                alert(data.message || 'Failed to delete the Theatre. Please try again.');
+                alert(data.message || 'Failed to delete the theatre. Please try again.');
             }
         })
         .catch(error => {
             // Handle any errors during the fetch request
             console.error('Error:', error);
-            alert('An error occurred while deleting the Theatre.');
+            alert('An error occurred while deleting the theatre.');
         });
     });
 
 
 </script>
+
+
+
+
+
 
 

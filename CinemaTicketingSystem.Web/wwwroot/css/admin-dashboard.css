@@ -371,3 +371,91 @@ textarea.form-control {
     margin: 10px 0;
     border-radius: 8px;
 }
+
+/* 🎬 Manage Theatres Section */
+.container-custom {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+h2 {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* 🔍 Search Box */
+#searchTheatre {
+    flex: 1;
+    border-radius: 8px;
+}
+
+    #searchTheatre::placeholder {
+        font-style: italic;
+        color: #aaa;
+    }
+
+.card-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 8px 8px 0 0;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* 🎭 Add Theatre & Hall Cards */
+.card {
+    transition: transform 0.2s ease-in-out;
+    border: none;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+.btn {
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+/* 📋 Theatre List */
+#TheatreListSec {
+    margin-top: 30px;
+}
+
+#successMessage {
+    margin-top: 15px;
+}
+
+
+
+#TheatreListSec {
+    display: none;
+    margin-top: 2rem;
+}
+
+.container-custom {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+.card-img-top {
+    object-fit: cover;
+    height: 200px;
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+

@@ -1,0 +1,77 @@
+﻿@model IEnumerable<Theatre>
+@{
+    int currentPage = (int)(ViewData["CurrentPage"] ?? 1);
+    int totalPages = (int)(ViewData["TotalPages"] ?? 1);
+}
+
+
+@Html.AntiForgeryToken()
+
+
+<!-- 🎭 Theatre Cards Section -->
+<div class="search-result-container">
+    @if (Model.Any())
+    {
+        
+            @foreach (var theatre in Model)
+            {
+                <div class="col">
+                    <div class="card shadow-sm border-0 rounded-4 h-100 d-flex flex-column">
+                        <!-- 🖼️ Theatre Image -->
+                        <div class="card-img-container">
+                            <img src="@theatre.TheatreImage"
+                                 class="card-img-top rounded-top-4"
+                                 alt="@theatre.TheatreName Image">
+                        </div>
+
+                        <!-- 📋 Theatre Details -->
+                        <div class="card-body d-flex flex-column flex-grow-1">
+                            <h5 class="card-title fw-bold text-primary">@theatre.TheatreName</h5>
+                            <p class="card-text text-muted mb-1">📍 <strong>Location:</strong> @theatre.Location</p>
+                            <p class="card-text text-muted mb-1">💺 <strong>Total Seats:</strong> @theatre.TotalSeats</p>
+                            <p class="card-text text-muted mb-3">🏢 <strong>Total Halls:</strong> @theatre.TotalSeats</p>
+
+                            <!-- 🛠️ Actions -->
+                            <div class="d-flex justify-content-between gap-2 mt-auto">
+                                <a asp-action="UpdateTheatre" asp-route-id="@theatre.TheatreId"
+                                   class="btn btn-sm btn-warning w-50">✏️ Edit</a>
+                                <button class="btn btn-sm btn-danger w-50"
+                                        onclick="confirmDelete('@theatre.TheatreId', '@theatre.TheatreName')">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <p class="text-muted fs-5">🚫 No theatres found. Please try another search term.</p>
+        </div>
+    }
+</div>
+
+
+
+<!-- 📝 Pagination -->
+@if (totalPages > 1)
+{
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" href="javascript:void(0)" onclick="loadPage(@i)">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+
+
+
+
