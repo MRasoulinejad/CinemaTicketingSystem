@@ -13,9 +13,9 @@ namespace CinemaTicketingSystem.Domain.Entities
         [Key]
         public int SeatId { get; set; }
         [Required]
-        public string Row { get; set; }
+        public string SectionName { get; set; }
         [Required]
-        public string SeatNumber { get; set; }
+        public int SeatNumber { get; set; }
         [Required]
         public bool IsReserved { get; set; }
         [Required]

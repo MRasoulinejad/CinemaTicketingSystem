@@ -10,6 +10,8 @@ namespace CinemaTicketingSystem.Application.Common.Interfaces
     {
         IMovieRepository Movies { get; }
         ITheatreRepository Theatres { get; }
+        IHallRepository Halls { get; }
+        ISeatRepository Seats { get; }
         void Save();
     }
 }

@@ -120,18 +120,41 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View();
         }
 
-        public IActionResult DeleteTheatre(int id)
+        [HttpPost]
+        public async Task<IActionResult> DeleteTheatre([FromBody]int id)
         {
             
-            return View();
+            Theatre theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == id);
+
+            if(theatre != null)
+            {
+                try
+                {
+                    List<Hall> halls = _unitOfWork.Halls.GetAll().Where(x => x.TheatreId == theatre.TheatreId).ToList();
+                    foreach (var hall in halls)
+                    {
+                        List<Seat> seats = _unitOfWork.Seats.GetAll().Where(x => x.HallId == hall.HallId).ToList();
+                        foreach (var seat in seats)
+                        {
+                            _unitOfWork.Seats.Remove(seat);
+                        }
+                        _unitOfWork.Halls.Remove(hall);
+                    }
+                    _unitOfWork.Theatres.Remove(theatre);
+                    _unitOfWork.Save();
+
+                    return Json(new { success = true });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
+                
+            }
+            return Json(new { success = false, message = "Theatre is Null!" });
         }
 
-        [HttpPost]
-        public IActionResult DeleteTheatre(Theatre theatre)
-        {
-            // Delete the theatre from the database
-            return RedirectToAction("Index");
-        }
+        
 
     }
 }

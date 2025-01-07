@@ -40,7 +40,7 @@
                 <div class="card-header bg-secondary text-white text-center fw-bold">➕ Add Hall</div>
                 <div class="card-body text-center">
                     <p class="text-muted">Add a new hall to an existing theatre.</p>
-                    <a asp-action="CreateHall" class="btn btn-secondary w-75">Add Hall</a>
+                    <a asp-controller="Hall" asp-action="CreateHall" class="btn btn-secondary w-75">Add Hall</a>
                 </div>
             </div>
         </div>
@@ -72,6 +72,10 @@
             </div>
             <div class="modal-body">
                 Are you sure you want to delete the theatre <strong id="theatreTitle"></strong>?
+                <br />
+                All associated halls, seats, and showtimes with this theatre will also be deleted.
+                <br />
+                <strong class="text-danger">This operation cannot be undone!</strong>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -149,7 +153,7 @@
         if (!selectedtheatreId) return; // Ensure a theatre ID is selected
 
         // Send a POST request with the ID directly as text
-        fetch('@Url.Action("Deletetheatre", "theatre")', {
+        fetch('@Url.Action("DeleteTheatre", "theatre")', {
             method: 'POST', // HTTP POST method
             headers: {
                 'Content-Type': 'application/json', // Specify JSON content type
