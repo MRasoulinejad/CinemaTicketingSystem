@@ -71,6 +71,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                 {
                     TheatreName = model.TheatreName,
                     Location = model.Location,
+                    Description = model.Description,
                     TheatreImage = uniqueFileName != null ? "/images/TheatreImages/" + uniqueFileName : null
                 };
                 
