@@ -22,11 +22,11 @@ namespace CinemaTicketingSystem.Web.Controllers
         {
             var theatres = new List<Theatre>
         {
-            new Theatre { TheatreId = 1, TheatreName = "Grand Cinema", Location = "Downtown", TotalSeats = 150, TheatreImage = "/images/theatre1.jpg" },
-            new Theatre { TheatreId = 2, TheatreName = "Cineplex Max", Location = "City Center", TotalSeats = 200, TheatreImage = "/images/theatre2.jpg" },
-            new Theatre { TheatreId = 3, TheatreName = "Star Cinema", Location = "Mall Plaza", TotalSeats = 180, TheatreImage = "/images/theatre3.jpg" },
-            new Theatre { TheatreId = 4, TheatreName = "Luxe Theatre", Location = "Uptown", TotalSeats = 120, TheatreImage = "/images/theatre4.jpg" },
-            new Theatre { TheatreId = 5, TheatreName = "Skyline Cinema", Location = "Sky Tower", TotalSeats = 300, TheatreImage = "/images/theatre5.jpg" }
+            new Theatre { TheatreId = 1, TheatreName = "Grand Cinema", Location = "Downtown",  TheatreImage = "/images/theatre1.jpg" },
+            new Theatre { TheatreId = 2, TheatreName = "Cineplex Max", Location = "City Center",  TheatreImage = "/images/theatre2.jpg" },
+            new Theatre { TheatreId = 3, TheatreName = "Star Cinema", Location = "Mall Plaza", TheatreImage = "/images/theatre3.jpg" },
+            new Theatre { TheatreId = 4, TheatreName = "Luxe Theatre", Location = "Uptown", TheatreImage = "/images/theatre4.jpg" },
+            new Theatre { TheatreId = 5, TheatreName = "Skyline Cinema", Location = "Sky Tower", TheatreImage = "/images/theatre5.jpg" }
         };
 
             // take 3 random theatres
