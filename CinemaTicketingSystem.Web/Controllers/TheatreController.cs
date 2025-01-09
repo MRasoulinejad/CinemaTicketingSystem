@@ -4,6 +4,7 @@ using CinemaTicketingSystem.Infrastructure.Repository;
 using CinemaTicketingSystem.Web.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace CinemaTicketingSystem.Web.Controllers
 {
@@ -28,7 +29,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         public IActionResult Details(int id)
         {
-            var theatre = _unitOfWork.Theatres.Get(x=> x.TheatreId == id);
+            var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == id);
             return View(theatre);
         }
 
@@ -74,7 +75,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                     Description = model.Description,
                     TheatreImage = uniqueFileName != null ? "/images/TheatreImages/" + uniqueFileName : null
                 };
-                
+
                 // 🗃️ Add the movie to the database
                 _unitOfWork.Theatres.Add(theatre);
                 _unitOfWork.Save();
@@ -103,30 +104,52 @@ namespace CinemaTicketingSystem.Web.Controllers
 
             return PartialView("_TheatreListPartial", new List<Theatre>());
         }
-
-        public IActionResult UpdateTheatre(int theatreId)
+        [HttpGet]
+        public IActionResult UpdateTheatre(int id)
         {
-            return View();
+            var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == id);
+
+            var halls = _unitOfWork.Halls.GetAll(h => h.TheatreId == theatre.TheatreId)
+                .ToList();
+
+            var theatreVM = new UpdateTheatreVM
+            {
+                TheatreId = theatre.TheatreId,
+                TheatreName = theatre.TheatreName,
+                Location = theatre.Location,
+                Description = theatre.Description,
+                CurrentImage = theatre.TheatreImage, 
+                Halls = halls.Select(h => new UpdateHallVM
+                {
+                    HallId = h.HallId,
+                    HallName = h.HallName,
+                    Sections = _unitOfWork.Seats.GetAll(b => b.HallId == h.HallId)
+                        .GroupBy(y => y.SectionName)
+                        .Select(s => new UpdateSectionVM
+                        {
+                            SectionName = s.Key,
+                            SeatsCount = s.Count()
+                        })
+                        .ToList()
+                }).ToList()
+            };
+            return View(theatreVM);
         }
 
         [HttpPost]
         public IActionResult UpdateTheatre(Theatre theatre)
         {
-            if (ModelState.IsValid)
-            {
-                // Update the theatre in the database
-                return RedirectToAction("Index");
-            }
+
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteTheatre([FromBody]int id)
+        public async Task<IActionResult> DeleteTheatre([FromBody] int id)
         {
-            
+
             Theatre theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == id);
 
-            if(theatre != null)
+            if (theatre != null)
             {
                 try
                 {
@@ -149,12 +172,12 @@ namespace CinemaTicketingSystem.Web.Controllers
                 {
                     return Json(new { success = false, message = ex.Message });
                 }
-                
+
             }
             return Json(new { success = false, message = "Theatre is Null!" });
         }
 
-        
+
 
     }
 }

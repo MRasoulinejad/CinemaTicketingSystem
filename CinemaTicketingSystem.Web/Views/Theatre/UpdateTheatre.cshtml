@@ -1,0 +1,80 @@
+﻿@model UpdateTheatreVM
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Update Theatre";
+}
+
+<div class="container py-4">
+    <h2 class="mb-5 text-center fw-bold">🎭 Update Theatre</h2>
+
+    <!-- 🟦 Theatre Details Card -->
+    <div class="card shadow-sm mb-4 rounded-4 p-4">
+        <h4 class="fw-bold mb-3">🏢 Theatre Details</h4>
+        <div class="row g-3 align-items-center">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">🎬 Theatre Name</label>
+                <input type="text" asp-for="TheatreName" class="form-control" readonly />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">📍 Location</label>
+                <input type="text" asp-for="Location" class="form-control" readonly />
+            </div>
+            <div class="col-md-12">
+                <label class="form-label fw-bold">📝 Description</label>
+                <textarea class="form-control" asp-for="Description" rows="3" readonly>Theatre Description</textarea>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.CurrentImage))
+            {
+                <div class="col-md-12 text-center mt-3">
+                    <label class="form-label fw-bold">📸 Theatre Image</label><br />
+                    <img src="@Model.CurrentImage" alt="Theatre Image" class="img-thumbnail rounded-4 shadow-sm" style="width: 250px; height: 250px; object-fit: cover;" />
+                </div>
+            }
+        </div>
+        <div class="text-center mt-4">
+            <a href="javascript:void(0);" class="btn btn-warning px-4">✏️ Edit Theatre</a>
+            <a href="javascript:void(0);" class="btn btn-danger px-4">🗑️ Delete Theatre</a>
+        </div>
+    </div>
+
+    <!-- 🟩 Halls, Sections, and Seats Card -->
+    <div class="card shadow-sm mb-4 rounded-4 p-4">
+        <h4 class="fw-bold mb-3">🏢 Halls, Sections, and Seats</h4>
+
+        <div class="row g-4">
+            @foreach (var hall in Model.Halls)
+            {
+                <div class="col-md-6">
+                    <div class="card rounded-3 shadow-sm p-3">
+                        <h5 class="fw-bold text-primary">🏛️ @hall.HallName</h5>
+                        <hr />
+                        <h6 class="fw-bold">💺 Sections</h6>
+                        @foreach (var seat in hall.Sections)
+                        {
+                            <ul class="list-group mb-2">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @seat.SectionName
+                                    <span class="badge bg-primary rounded-pill">@seat.SeatsCount Seats</span>
+                                </li>
+                            </ul>
+                        }
+                        
+                    </div>
+                </div>
+            }
+            <div class="text-center mt-3">
+                <a href="javascript:void(0);" class="btn btn-sm btn-warning">✏️ Edit</a>
+                <a href="javascript:void(0);" class="btn btn-sm btn-danger">🗑️ Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🛠️ Scripts Section -->
+@section Scripts {
+    <script>
+        console.log("Update Theatre Page Loaded!");
+    </script>
+}
