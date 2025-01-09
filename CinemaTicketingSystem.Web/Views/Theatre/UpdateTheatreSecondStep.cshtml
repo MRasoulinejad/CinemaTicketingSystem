@@ -1,0 +1,80 @@
+﻿@model UpdateTheatreVM
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Update Theatre";
+}
+
+<h2 class="mb-4 text-center">🎭 Update Theatre Details</h2>
+
+<div class="container">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">✏️ Edit Theatre Information</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="UpdateTheatreSecondStep" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="TheatreId" />
+
+                <!-- Theatre Name and Location -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="TheatreName" class="form-label">🎭 Theatre Name</label>
+                        <input asp-for="TheatreName" class="form-control" placeholder="Enter theatre name" />
+                        <span asp-validation-for="TheatreName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Location" class="form-label">📍 Location</label>
+                        <input asp-for="Location" class="form-control" placeholder="Enter theatre location" />
+                        <span asp-validation-for="Location" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">📝 Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter theatre description"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <!-- Theatre Image Upload -->
+                <div class="mb-3">
+                    <label class="form-label">🖼️ Theatre Image</label>
+                    <input type="file" asp-for="TheatreImage" class="form-control" accept="image/*" />
+                    <div class="form-text">Upload a new theatre image (optional).</div>
+                </div>
+
+                <!-- Current Image Preview -->
+                @if (!string.IsNullOrEmpty(Model?.CurrentImage))
+                {
+                    <div class="mb-3 text-center">
+                        <label class="form-label">📸 Current Image</label><br />
+                        <img src="@Model.CurrentImage" alt="Theatre Image" class="img-thumbnail" style="width: 200px; height: 300px; object-fit: cover;" />
+                    </div>
+                }
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="ManageTheatre" class="btn btn-secondary">⬅️ Back to List</a>
+                    <button type="submit" class="btn btn-success">💾 Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Validation Summary -->
+<div class="mt-4">
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <strong>⚠️ Please correct the errors below:</strong>
+            <ul>
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+</div>

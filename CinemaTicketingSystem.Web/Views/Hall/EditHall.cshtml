@@ -1,0 +1,94 @@
+﻿@model UpdateHallVM
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Edit Hall and Sections";
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold">✏️ Edit Hall and Sections</h2>
+
+    <!-- 🟦 Hall Details Section -->
+    <div class="card shadow-sm mb-4 rounded-4 p-4">
+        <h4 class="fw-bold">🏢 Hall Details</h4>
+        @{
+            if (TempData["success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>🎉 Success!</strong> @TempData["success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            if (TempData["error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>🚨 Error!</strong> @TempData["error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+        }
+
+        <form asp-action="UpdateHallName" method="post">
+            <input type="hidden" asp-for="HallId" />
+            <div class="row g-3 align-items-center">
+                <div class="col-md-12">
+                    <label asp-for="HallName" class="form-label fw-bold">🏛️ Hall Name</label>
+                    <input asp-for="HallName" class="form-control" />
+                    <span asp-validation-for="HallName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-success px-5">💾 Save Hall</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 🟩 Sections and Seats Section -->
+    <div class="card shadow-sm mb-4 rounded-4 p-4">
+        <h4 class="fw-bold">💺 Edit Sections and Seats</h4>
+        <form asp-action="UpdateSections" method="post">
+            <input type="hidden" asp-for="HallId" />
+            <div id="sectionContainer">
+                @for (int i = 0; i < Model.Sections.Count; i++)
+                {
+                    <div class="row g-3 align-items-center mb-3">
+                        <input type="hidden" asp-for="@Model.Sections[i].SectionName" />
+                        <div class="col-md-6">
+                            <label asp-for="@Model.Sections[i].SectionName" class="form-label fw-bold">🔠 Section Name</label>
+                            <input asp-for="@Model.Sections[i].SectionName" class="form-control" />
+                            <span asp-validation-for="@Model.Sections[i].SectionName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="@Model.Sections[i].SeatsCount" class="form-label fw-bold">💺 Number of Seats</label>
+                            <input asp-for="@Model.Sections[i].SeatsCount" class="form-control" type="number" />
+                            <span asp-validation-for="@Model.Sections[i].SeatsCount" class="text-danger"></span>
+                        </div>
+                        @* <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger w-100" onclick="removeSection(this)">🗑️ Remove</button>
+                        </div> *@
+                    </div>
+                }
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-success px-5">💾 Save All Sections</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="text-center mt-4">
+        <a asp-controller="Theatre" asp-action="ManageTheatre" class="btn btn-secondary px-5">🏠 Back to Theatre Management</a>
+    </div>
+</div>
+
+@* @section Scripts {
+    <script>
+        // Function to remove a section row dynamically
+        function removeSection(button) {
+            const sectionRow = button.closest('.row');
+            sectionRow.remove();
+        }
+    </script>
+} *@

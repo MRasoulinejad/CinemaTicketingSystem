@@ -4,9 +4,15 @@
     Layout = "_AdminLayout";
     ViewData["Title"] = "Update Theatre";
 }
+@Html.AntiForgeryToken()
 
 <div class="container py-4">
     <h2 class="mb-5 text-center fw-bold">🎭 Update Theatre</h2>
+
+    <!-- 🟢 Success Message -->
+    <div id="successMessageTheatre" class="alert alert-success text-center mt-3 d-none" role="alert">
+        Theatre deleted successfully!
+    </div>
 
     <!-- 🟦 Theatre Details Card -->
     <div class="card shadow-sm mb-4 rounded-4 p-4">
@@ -22,22 +28,310 @@
             </div>
             <div class="col-md-12">
                 <label class="form-label fw-bold">📝 Description</label>
-                <textarea class="form-control" asp-for="Description" rows="3" readonly>Theatre Description</textarea>
+                <textarea class="form-control" asp-for="Description" rows="3" readonly></textarea>
             </div>
 
-            @if (!string.IsNullOrEmpty(Model.CurrentImage))
+            @* <!-- Image Upload -->
+            <div class="mb-3">
+                <label class="form-label">🖼️ Theatre Image</label>
+                <input type="file" asp-for="TheatreImage" class="form-control" accept="image/*" />
+                <div class="form-text">Upload a new image (optional).</div>
+            </div> *@
+
+            <!-- Current Image Preview -->
+            @if (!string.IsNullOrEmpty(Model?.CurrentImage))
             {
-                <div class="col-md-12 text-center mt-3">
-                    <label class="form-label fw-bold">📸 Theatre Image</label><br />
-                    <img src="@Model.CurrentImage" alt="Theatre Image" class="img-thumbnail rounded-4 shadow-sm" style="width: 250px; height: 250px; object-fit: cover;" />
+                <div class="mb-3 text-center">
+                    <label class="form-label">📸 Current Image</label><br />
+                    <img src="@Model.CurrentImage" alt="Theatre Image" class="img-thumbnail" style="width: 200px; height: 300px; object-fit: cover;" />
                 </div>
             }
         </div>
         <div class="text-center mt-4">
-            <a href="javascript:void(0);" class="btn btn-warning px-4">✏️ Edit Theatre</a>
-            <a href="javascript:void(0);" class="btn btn-danger px-4">🗑️ Delete Theatre</a>
+            <a asp-controller="Theatre" asp-action="UpdateTheatreSecondStep" asp-route-id="@Model.TheatreId" class="btn btn-sm btn-warning">✏️ Edit Theatre</a>
+            <button class="btn btn-sm btn-danger" onclick="confirmDelete('@Model.TheatreId', '@Model.TheatreName')">🗑️ Delete Theatre</button>
         </div>
     </div>
+
+    <!-- 🟩 Halls, Sections, and Seats Card -->
+    <div class="card shadow-sm mb-4 rounded-4 p-4">
+        <h4 class="fw-bold mb-3">🏢 Halls, Sections, and Seats</h4>
+        <!-- 🟢 Success Message -->
+        <div id="successMessageHall" class="alert alert-success text-center mt-3 d-none" role="alert">
+            Hall deleted successfully!
+        </div>
+        @foreach (var hall in Model.Halls)
+        {
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="fw-bold text-primary">🏛️ @hall.HallName</h5>
+                    <hr />
+                    <h6 class="fw-bold">💺 Sections and Seats</h6>
+                    <ul class="list-group">
+                        @foreach (var seat in hall.Sections)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Section: @seat.SectionName
+                                <span class="badge bg-primary rounded-pill">@seat.SeatsCount Seats</span>
+                            </li>
+                        }
+                    </ul>
+                    <div class="text-center mt-3">
+                        <a asp-controller="Hall" asp-action="EditHall" asp-route-id="@hall.HallId" class="btn btn-sm btn-warning">✏️ Edit Hall</a>
+                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteHall('@hall.HallId', '@hall.HallName')">🗑️ Delete Hall</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- 🛑 Theatre Delete Confirmation Modal -->
+<div class="modal fade" id="theatreDeleteModal" tabindex="-1" aria-labelledby="theatreDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="theatreDeleteModalLabel">Confirm Theatre Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="deleteTheatreName"></strong>?
+                <br />
+                All associated halls, seats, and showtimes with this theatre will also be deleted.
+                <br />
+                <strong class="text-danger">This operation cannot be undone!</strong>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteTheatreButton">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🛑 Hall Delete Confirmation Modal -->
+<div class="modal fade" id="hallDeleteModal" tabindex="-1" aria-labelledby="hallDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="hallDeleteModalLabel">Confirm Hall Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="deleteHallName"></strong> hall?
+                <br />
+                All associated seats, and showtimes with this hall will also be deleted.
+                <br />
+                <strong class="text-danger">This operation cannot be undone!</strong>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteHallButton">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- 🛠️ Scripts Section -->
+<script>
+    
+    //Delete theatre modal
+        let selectedTheatreId = null; // Stores the selected theatre ID
+
+        // 🟢 Show confirmation modal for Theatre Delete
+        function confirmDelete(theatreId, theatreName) {
+            selectedTheatreId = theatreId;
+            document.getElementById('deleteTheatreName').innerText = theatreName;
+            const theatreModal = new bootstrap.Modal(document.getElementById('theatreDeleteModal'));
+            theatreModal.show();
+        }
+
+
+        // 🛑 Handle Confirm Delete Button Click
+    document.getElementById('confirmDeleteTheatreButton').addEventListener('click', function () {
+        if (!selectedTheatreId) return; // Ensure a theatre ID is selected
+
+        // Send a POST request with the ID directly as text
+        fetch('@Url.Action("DeleteTheatre", "Theatre")', {
+            method: 'POST', // HTTP POST method
+            headers: {
+                'Content-Type': 'application/json', // Specify JSON content type
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value // Include CSRF token
+            },
+            body: selectedTheatreId.toString() // Send the movie ID as a plain integer string
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to delete theatre.'); // Handle non-OK responses
+            }
+            return response.json(); // Parse the response as JSON
+        })
+        .then(data => {
+            if (data.success) {
+                // Close the modal if the deletion was successful
+                const deleteModal = bootstrap.Modal.getInstance(document.getElementById('theatreDeleteModal'));
+                deleteModal.hide();
+
+                // Show success message
+                const successMessage = document.getElementById('successMessageTheatre');
+                successMessage.classList.remove('d-none');
+
+                // Hide the success message after 2 seconds and reload the page
+                setTimeout(() => {
+                    successMessage.classList.add('d-none');
+                    //location.reload(); // Refresh the theatre list
+                    window.location.href = '@Url.Action("ManageTheatre", "Theatre")'; // Redirect to the desired controller/action
+                }, 2000);
+            } else {
+                // Show an alert if the server returned an error
+                alert(data.message || 'Failed to delete the theatre. Please try again.');
+            }
+        })
+        .catch(error => {
+            // Handle any errors during the fetch request
+            console.error('Error:', error);
+            alert('An error occurred while deleting the theatre.');
+        });
+    });
+
+</script>
+
+<script>
+    // delete hall modal
+    let selectedHallId = null; // Stores the selected hall ID
+
+        // 🟢 Show confirmation modal for Theatre Delete
+        function confirmDeleteHall(HallId, HallName) {
+            selectedHallId = HallId;
+            document.getElementById('deleteHallName').innerText = HallName;
+            const theatreModal = new bootstrap.Modal(document.getElementById('hallDeleteModal'));
+            theatreModal.show();
+        }
+
+
+        // 🛑 Handle Confirm Delete Button Click
+    document.getElementById('confirmDeleteHallButton').addEventListener('click', function () {
+        if (!selectedHallId) return; // Ensure a hall ID is selected
+
+        // Send a POST request with the ID directly as text
+        fetch('@Url.Action("DeleteHall", "Hall")', {
+            method: 'POST', // HTTP POST method
+            headers: {
+                'Content-Type': 'application/json', // Specify JSON content type
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value // Include CSRF token
+            },
+            body: selectedHallId.toString() // Send the hall ID as a plain integer string
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to delete hall.'); // Handle non-OK responses
+            }
+            return response.json(); // Parse the response as JSON
+        })
+        .then(data => {
+            if (data.success) {
+                // Close the modal if the deletion was successful
+                const deleteModal = bootstrap.Modal.getInstance(document.getElementById('hallDeleteModal'));
+                deleteModal.hide();
+
+                // Show success message
+                const successMessage = document.getElementById('successMessageHall');
+                successMessage.classList.remove('d-none');
+
+                // Hide the success message after 2 seconds and reload the page
+                setTimeout(() => {
+                    successMessage.classList.add('d-none');
+
+                    location.reload(); // Refresh the hall list
+                }, 2000);
+            } else {
+                // Show an alert if the server returned an error
+                alert(data.message || 'Failed to delete the hall. Please try again.');
+            }
+        })
+        .catch(error => {
+            // Handle any errors during the fetch request
+            console.error('Error:', error);
+            alert('An error occurred while deleting the hall.');
+        });
+    });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* @model UpdateTheatreVM
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Update Theatre";
+}
+
+
+
+<div class="container py-4">
+    <h2 class="mb-5 text-center fw-bold">🎭 Update Theatre</h2>
+
+    <!-- 🟦 Theatre Details Card -->
+    <div class="card shadow-sm mb-4 rounded-4 p-4">
+        <h4 class="fw-bold mb-3">🏢 Theatre Details</h4>
+        <div class="row g-3 align-items-center">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">🎬 Theatre Name</label>
+                <input type="text" asp-for="TheatreName" class="form-control"  />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">📍 Location</label>
+                <input type="text" asp-for="Location" class="form-control"  />
+            </div>
+            <div class="col-md-12">
+                <label class="form-label fw-bold">📝 Description</label>
+                <textarea class="form-control" asp-for="Description" rows="3" >Theatre Description</textarea>
+            </div>
+
+
+            <!-- Image Upload -->
+            <div class="mb-3">
+                <label class="form-label">🖼️ Theatre Image</label>
+                <input type="file" asp-for="TheatreImage" class="form-control" accept="image/*" />
+                <div class="form-text">Upload a new image (optional).</div>
+            </div>
+
+            <!-- Current Image Preview -->
+            @if (!string.IsNullOrEmpty(Model?.CurrentImage))
+            {
+                <div class="mb-3 text-center">
+                    <label class="form-label">📸 Current Image</label><br />
+                    <img src="@Model.CurrentImage" alt="Theatre Image" class="img-thumbnail" style="width: 200px; height: 300px; object-fit: cover;" />
+                </div>
+            }
+
+        </div>
+        <div class="text-center mt-4">
+            <a asp-action="UpdateTheatre" asp-route-id="@Model.TheatreId" class="btn btn-sm btn-warning">Edit</a>
+            <button class="btn btn-sm btn-danger" onclick="confirmDelete('@Model.TheatreId', '@Model.TheatreName')">Delete</button>
+        </div>
+    </div>
+
+
 
     <!-- 🟩 Halls, Sections, and Seats Card -->
     <div class="card shadow-sm mb-4 rounded-4 p-4">
@@ -72,9 +366,54 @@
     </div>
 </div>
 
+
+<!-- 🛑 Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the theatre <strong id="theatreTitle"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <!-- 🛠️ Scripts Section -->
-@section Scripts {
-    <script>
-        console.log("Update Theatre Page Loaded!");
-    </script>
-}
+<script>
+    // Delete Confirmation Modal
+    $('#deleteModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var theatreName = button.data('theatre-name');
+        var modal = $(this);
+        modal.find('#theatreTitle').text(theatreName);
+    });
+    // Delete Confirmation Button
+    $('#confirmDeleteButton').click(function () {
+        // Perform delete operation
+    });
+
+        function loadPage(page) {
+        fetch(`@Url.Action("Manage", "Movie")?page=${page}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('movieList').innerHTML = html;
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+ *@
