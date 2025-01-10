@@ -45,6 +45,8 @@
         </form>
     </div>
 
+
+
     <!-- 🟩 Sections and Seats Section -->
     <div class="card shadow-sm mb-4 rounded-4 p-4">
         <h4 class="fw-bold">💺 Edit Sections and Seats</h4>
@@ -54,7 +56,9 @@
                 @for (int i = 0; i < Model.Sections.Count; i++)
                 {
                     <div class="row g-3 align-items-center mb-3">
-                        <input type="hidden" asp-for="@Model.Sections[i].SectionName" />
+                        <!-- Hidden field to hold the old SectionName -->
+                        <input type="hidden" name="Sections[@i].OldSectionName" value="@Model.Sections[i].SectionName" />
+
                         <div class="col-md-6">
                             <label asp-for="@Model.Sections[i].SectionName" class="form-label fw-bold">🔠 Section Name</label>
                             <input asp-for="@Model.Sections[i].SectionName" class="form-control" />
@@ -65,30 +69,31 @@
                             <input asp-for="@Model.Sections[i].SeatsCount" class="form-control" type="number" />
                             <span asp-validation-for="@Model.Sections[i].SeatsCount" class="text-danger"></span>
                         </div>
-                        @* <div class="col-md-2 d-flex align-items-end">
-                            <button type="button" class="btn btn-danger w-100" onclick="removeSection(this)">🗑️ Remove</button>
-                        </div> *@
                     </div>
                 }
             </div>
 
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-success px-5">💾 Save All Sections</button>
+            <div class="row g-3 align-items-center mb-3">
+
+                <!-- Save All Sections Button Below Section Names -->
+                <div class="text-center col-md-6">
+                    <button type="submit" class="btn btn-success">💾 Save All Section Names</button>
+                </div>
+
+                <!-- Save All Sections Button Below Number of Seats -->
+                <div class="text-center col-md-6">
+                    <button type="submit" class="btn btn-success">💾 Save All Seat Counts</button>
+                </div>
+
             </div>
+            
         </form>
     </div>
+
+
 
     <div class="text-center mt-4">
         <a asp-controller="Theatre" asp-action="ManageTheatre" class="btn btn-secondary px-5">🏠 Back to Theatre Management</a>
     </div>
 </div>
 
-@* @section Scripts {
-    <script>
-        // Function to remove a section row dynamically
-        function removeSection(button) {
-            const sectionRow = button.closest('.row');
-            sectionRow.remove();
-        }
-    </script>
-} *@
