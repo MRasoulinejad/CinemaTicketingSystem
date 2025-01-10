@@ -126,13 +126,13 @@ namespace CinemaTicketingSystem.Web.Controllers
             Hall hall = _unitOfWork.Halls.Get(x => x.HallId == id);
             if (hall != null)
             {
-                var updatehall = new UpdateHallVM
+                var updatehall = new EditHallVM
                 {
                     HallId = hall.HallId,
                     HallName = hall.HallName,
                     Sections = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
                     .GroupBy(y => y.SectionName)
-                        .Select(s => new UpdateSectionVM
+                        .Select(s => new EditSectionVM
                         {
                             SectionName = s.Key,
                             SeatsCount = s.Count()
@@ -168,19 +168,19 @@ namespace CinemaTicketingSystem.Web.Controllers
 
 
         [HttpPost]
-        public IActionResult UpdateSections(UpdateHallVM model)
+        public IActionResult UpdateSections(EditHallVM model)
         {
             Hall hall = _unitOfWork.Halls.Get(x => x.HallId == model.HallId);
 
             if (hall is not null)
             {
-                var updatehall = new UpdateHallVM
+                var updatehall = new EditHallVM
                 {
                     HallId = hall.HallId,
                     HallName = hall.HallName,
                     Sections = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
                         .GroupBy(y => y.SectionName)
-                        .Select(s => new UpdateSectionVM
+                        .Select(s => new EditSectionVM
                         {
                             SectionName = s.Key,
                             SeatsCount = s.Count()
