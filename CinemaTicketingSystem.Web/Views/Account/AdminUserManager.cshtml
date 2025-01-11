@@ -1,0 +1,122 @@
+﻿@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "User Management";
+}
+
+<div class="container py-4">
+
+
+
+    <h2 class="text-center mb-4 fw-bold">👤 User Management</h2>
+
+    <!-- Search Section -->
+    <div class="card shadow-sm mb-4 rounded-4 p-4">
+
+        @{
+            if (TempData["success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>🎉 Success!</strong> @TempData["success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            if (TempData["error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>🚨 Error!</strong> @TempData["error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+        }
+
+
+        <h4 class="fw-bold mb-3">🔍 Search User</h4>
+        <div class="input-group">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by name or email..." />
+            <button class="btn btn-primary" onclick="searchUsers()">🔍 Search</button>
+        </div>
+    </div>
+
+    <!-- User List Section -->
+    <div id="userList" class="row g-4">
+        <!-- Dynamic user cards will be populated here -->
+    </div>
+
+    
+</div>
+
+
+@section Scripts {
+    <script>
+
+
+        // render user cards
+                       function renderUserCards(users) {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = ''; // Clear existing user cards
+
+            users.forEach(user => {
+                console.log(user); // Log each user object
+                const userCard = `
+                    <div class="col-md-4">
+                        <div class="card shadow-sm rounded-4 p-3">
+                            <h5 class="fw-bold text-primary">${user.firstName}  ${user.lastName}</h5>
+                            <p><strong>Email:</strong> ${user.email}</p>
+                            <p><strong>Role:</strong> ${user.roles ? user.roles.join(', ') : 'N/A'}</p>
+                            <button class="btn btn-sm btn-warning" onclick="onClickUpdateUser('${user.email}')">✏️ Edit</button>
+                        </div>
+                    </div>
+                `;
+                userList.insertAdjacentHTML('beforeend', userCard);
+            });
+        }
+
+
+        // Search Users
+                       function searchUsers() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+
+            if (!searchTerm) {
+                alert("Please enter a search term.");
+                return;
+            }
+
+            fetch(`/Account/SearchUsers?query=${encodeURIComponent(searchTerm)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Error fetching users");
+                    return response.json();
+                })
+                .then(users => {
+                    if (Array.isArray(users) && users.length > 0) {
+                        renderUserCards(users); // Render user cards if users are found
+                    } else {
+                        document.getElementById('userList').innerHTML = '<p class="text-muted">No users found.</p>';
+                    }
+                })
+                .catch(error => console.error("Error searching users:", error));
+        }
+
+
+        // Send user ID to backend
+        function onClickUpdateUser(userEmail) {
+            // Use JavaScript fetch to send the ID to the backend
+            fetch(`/Account/UpdateUser?userEmail=${encodeURIComponent(userEmail)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Error navigating to UpdateUser");
+                return response.text();
+            })
+            .then(html => {
+                // Replace the current page content with the received HTML (or handle navigation)
+                document.open();
+                document.write(html);
+                document.close();
+            })
+            .catch(error => console.error("Error loading UpdateUser view:", error));
+        }
+
+    </script>
+}

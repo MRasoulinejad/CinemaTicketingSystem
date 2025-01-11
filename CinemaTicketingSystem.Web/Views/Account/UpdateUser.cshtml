@@ -1,0 +1,62 @@
+﻿@model UpdateUserVM
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Update User";
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-primary">✏️ Edit User Information</h2>
+
+    <!-- User Edit Form Card -->
+    <div class="card shadow-sm rounded-4 p-4">
+        <form asp-action="UpdateUserSecondStep" method="post" enctype="multipart/form-data">
+            <!-- Row 1: First Name and Last Name -->
+            <div class="row g-4 mb-4">
+                <input asp-for="Id" hidden />
+                <div class="col-md-6">
+                    <label asp-for="FirstName" class="form-label fw-bold">👤 First Name</label>
+                    <input asp-for="FirstName" class="form-control" placeholder="Enter first name" required />
+                    <span asp-validation-for="FirstName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="LastName" class="form-label fw-bold">👤 Last Name</label>
+                    <input asp-for="LastName" class="form-control" placeholder="Enter last name" required />
+                    <span asp-validation-for="LastName" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <!-- Row 2: Email and Phone Number -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label fw-bold">📧 Email</label>
+                    <input asp-for="Email" class="form-control" placeholder="Enter email address" required />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="PhoneNumber" class="form-label fw-bold">📞 Phone Number</label>
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <!-- Roles Dropdown -->
+            <div class="mb-4">
+                <label asp-for="Roles" class="form-label fw-bold">⚙️ Roles</label>
+                <select class="form-select" asp-for="Roles">
+                    <option value="" disabled>Select a role</option>
+                    @foreach (var role in Model.AllRoles)
+                    {
+                        <option value="@role" >@role</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-success px-5 py-2">
+                    💾 Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

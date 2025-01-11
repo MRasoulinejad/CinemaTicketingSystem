@@ -10,8 +10,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="~/css/admin-dashboard.css">
+    <!-- Bootstrap CSS -->
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/dist/css/bootstrap.rtl.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
 </head>
 <body>
     <div class="d-flex" id="wrapper">
@@ -24,7 +28,7 @@
                 <a asp-controller="Reservation" asp-action="Index" class="list-group-item list-group-item-action text-white bg-dark">🎟️ Manage Reservations</a>
                 <a asp-controller="Movie" asp-action="ManageMovie" class="list-group-item list-group-item-action text-white bg-dark">🎥 Manage Movies</a>
                 <a asp-controller="Theatre" asp-action="ManageTheatre" class="list-group-item list-group-item-action text-white bg-dark">🏢 Manage Theatres</a>
-                <a asp-controller="User" asp-action="Index" class="list-group-item list-group-item-action text-white bg-dark">👤 Manage Users</a>
+                <a asp-controller="Account" asp-action="AdminUserManager" class="list-group-item list-group-item-action text-white bg-dark">👤 Manage Users</a>
                 <a asp-controller="Account" asp-action="Logout" class="list-group-item list-group-item-action text-white bg-dark">🚪 Logout</a>
             </div>
             <!-- 🌐 Return to Main Website Button -->
@@ -54,7 +58,19 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.slim.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.slim.js"></script>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.esm.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.esm.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
     <script>
         // 🛠️ Toggle sidebar
         const toggleButton = document.getElementById('menu-toggle');
@@ -63,6 +79,7 @@
             wrapper.classList.toggle('toggled');
         });
     </script>
+
 
 
     @RenderSection("Scripts", required: false)

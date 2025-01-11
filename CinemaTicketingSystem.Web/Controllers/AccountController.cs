@@ -1,10 +1,14 @@
 ﻿using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using Newtonsoft.Json;
+using System.Data;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CinemaTicketingSystem.Web.Controllers
 {
@@ -53,7 +57,8 @@ namespace CinemaTicketingSystem.Web.Controllers
                 var result = _signInManager
                     .PasswordSignInAsync(model.Username, model.Password, model.RememberMe, false).Result;
 
-                if (result.Succeeded) {
+                if (result.Succeeded)
+                {
                     var user = await _userManager.FindByEmailAsync(model.Username);
                     if (await _userManager.IsInRoleAsync(user, SD.Role_Admin))
                     {
@@ -70,7 +75,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                             return LocalRedirect(model.RedirectUrl);
                         }
                     }
-                    
+
                 }
                 else
                 {
@@ -115,6 +120,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                     return View();
                 }
 
+
                 ApplicationUser user = new ApplicationUser
                 {
                     UserName = model.Email,
@@ -153,7 +159,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                         }
                         return View();
                     }
-                } 
+                }
             }
             ViewData["Success"] = "Registration successful! Please log in.";
             return RedirectToAction("Login");
@@ -177,6 +183,143 @@ namespace CinemaTicketingSystem.Web.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+
+        public IActionResult AdminUserManager()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchUsers(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return Json(new { success = false, message = "Query cannot be empty." });
+            }
+
+            try
+            {
+                // Fetch users that match the query
+                var users = _userManager.Users
+                    .Where(u => u.Email.Contains(query.ToLower()) ||
+                                u.FirstName.Contains(query.ToLower()) ||
+                                u.LastName.Contains(query.ToLower()))
+                    .ToList();
+
+                // Fetch roles for each user
+                var userWithRoles = new List<object>();
+                foreach (var user in users)
+                {
+                    var roles = await _userManager.GetRolesAsync(user); // Fetch roles asynchronously
+                    userWithRoles.Add(new
+                    {
+                        user.Id,
+                        user.FirstName,
+                        user.LastName,
+                        user.Email,
+                        Roles = roles
+                    });
+                }
+
+                return Json(userWithRoles);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error occurred.", details = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateUser(string userEmail)
+        {
+            if (string.IsNullOrWhiteSpace(userEmail))
+            {
+                return BadRequest("User Email cannot be empty.");
+            }
+
+            var user = await _userManager.FindByEmailAsync(userEmail);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            // Retrieve roles for the user
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // Create a ViewModel to send data to the view
+            var userViewModel = new UpdateUserVM
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Roles = roles.ToList(),
+                AllRoles = _roleManager.Roles.Select(r => r.Name).ToList() // Get all available roles
+            };
+
+            return View(userViewModel); // Pass the ViewModel to the view
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateUserSecondStep(UpdateUserVM model)
+        {
+            // Find the user by email (or use Id for a more reliable approach)
+            ApplicationUser user = await _userManager.FindByIdAsync(model.Id);
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+
+            // Check if the email already exists and belongs to another user
+            var emailExists = await _userManager.Users
+                .AnyAsync(u => u.Email == model.Email && u.Id != model.Id);
+
+            if (emailExists)
+            {
+                TempData["error"] = "The provided email address is already in use by another user.";
+                return RedirectToAction("AdminUserManager");
+            }
+
+
+            // Update user properties
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.Email = model.Email; // Ensure this doesn't conflict with another user's email
+            user.PhoneNumber = model.PhoneNumber;
+
+            // Update user in database
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                return BadRequest("Failed to update user details");
+            }
+
+            // Update roles if different
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var newRole = model.Roles.FirstOrDefault(); // Assuming a single role from the model
+            if (!string.IsNullOrEmpty(newRole) && !currentRoles.Contains(newRole))
+            {
+                // Remove existing roles
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!removeResult.Succeeded)
+                {
+                    return BadRequest("Failed to remove existing roles");
+                }
+
+                // Add the new role
+                var addResult = await _userManager.AddToRoleAsync(user, newRole);
+                if (!addResult.Succeeded)
+                {
+                    return BadRequest("Failed to assign the new role");
+                }
+            }
+            TempData["success"] = "User data successfully updated";
+            return RedirectToAction("AdminUserManager");
         }
     }
 }
