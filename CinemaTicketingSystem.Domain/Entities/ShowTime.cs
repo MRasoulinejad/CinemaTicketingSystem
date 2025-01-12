@@ -23,6 +23,8 @@ namespace CinemaTicketingSystem.Domain.Entities
         [ForeignKey("TheatreId")]
         public Theatre Theatre { get; set; }
         [Required]
+        public int HallId { get; set; }
+        [Required]
         public int MovieId { get; set; }
         [ForeignKey("MovieId")]
         public Movie Movie { get; set; }

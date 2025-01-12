@@ -1,0 +1,127 @@
+﻿@model AddShowTimeVM
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Add New Show Time";
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-primary">➕ Add New Show Time</h2>
+
+    <div class="card shadow-sm rounded-4 p-4">
+        <form asp-action="AddShowTime" method="post">
+            <!-- Show Date -->
+            <div class="row g-3 align-items-center mb-3">
+                <div class="col-md-6">
+                    <label asp-for="ShowDate" class="form-label fw-bold">📅 Show Date</label>
+                    <input asp-for="ShowDate" class="form-control" type="date" />
+                    <span asp-validation-for="ShowDate" class="text-danger small"></span>
+                </div>
+
+                <!-- Start Time -->
+                <div class="col-md-3">
+                    <label asp-for="ShowTimeStart" class="form-label fw-bold">🕒 Start Time</label>
+                    <input asp-for="ShowTimeStart" class="form-control" type="time" />
+                    <span asp-validation-for="ShowTimeStart" class="text-danger small"></span>
+                </div>
+
+                <!-- End Time -->
+                <div class="col-md-3">
+                    <label asp-for="ShowTimeEnd" class="form-label fw-bold">🕒 End Time</label>
+                    <input asp-for="ShowTimeEnd" class="form-control" type="time" />
+                    <span asp-validation-for="ShowTimeEnd" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <!-- Theatre -->
+            <div class="mb-3">
+                <label asp-for="TheatreId" class="form-label fw-bold">🏢 Select Theatre</label>
+                <select asp-for="TheatreId" id="theatreDropdown" class="form-select" onchange="fetchHalls(this.value)">
+                    <option value="">-- Select Theatre --</option>
+                    @foreach (var theatre in Model.Theatres)
+                    {
+                        <option value="@theatre.TheatreId">@theatre.TheatreName</option>
+                    }
+                </select>
+                <span asp-validation-for="TheatreId" class="text-danger small"></span>
+            </div>
+
+            <!-- Halls -->
+            <div class="mb-3">
+                <label asp-for="HallId" class="form-label fw-bold">🏠 Select Hall</label>
+                <select asp-for="HallId" id="hallDropdown" class="form-select">
+                    <!-- Default option for initial load -->
+                    <option value="" disabled selected>-- Select Hall --</option>
+                    @if (Model.Halls != null && Model.Halls.Any())
+                    {
+                        @foreach (var hall in Model.Halls)
+                        {
+                            <option value="@hall.HallId">@hall.HallName</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="Halls" class="text-danger small"></span>
+            </div>
+
+
+
+            <!-- Movie -->
+            <div class="mb-3">
+                <label asp-for="MovieId" class="form-label fw-bold">🎬 Select Movie</label>
+                <select asp-for="MovieId" class="form-select">
+                    <option value="">-- Select Movie --</option>
+                    @foreach (var movie in Model.Movies)
+                    {
+                        <option value="@movie.MovieId">@movie.Title</option>
+                    }
+                </select>
+                <span asp-validation-for="MovieId" class="text-danger small"></span>
+            </div>
+
+            <!-- Price -->
+            <div class="row g-3 align-items-center mb-3">
+                <div class="col-md-6">
+                    <label asp-for="Price" class="form-label fw-bold">💵 Price</label>
+                    <input asp-for="Price" class="form-control" type="number" step="0.01" placeholder="Enter ticket price" />
+                    <span asp-validation-for="Price" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-success px-5">💾 Save Show Time</button>
+                <a asp-action="ShowTimeManagement" class="btn btn-secondary px-5">🔙 Back to Management</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        // Fetch halls based on the selected theatre
+        function fetchHalls(theatreId) {
+            const hallDropdown = document.getElementById("hallDropdown");
+
+            if (!theatreId) {
+                hallDropdown.innerHTML = '<option value="">-- Select Hall --</option>';
+                return;
+            }
+
+            fetch(`/ShowTime/GetHallsByTheatre?theatreId=${theatreId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Failed to fetch halls");
+                    return response.json();
+                })
+                .then(halls => {
+                    hallDropdown.innerHTML = '<option value="">-- Select Hall --</option>'; // Reset options
+                    halls.forEach(hall => {
+                        const option = document.createElement("option");
+                        option.value = hall.hallId;
+                        option.textContent = hall.hallName;
+                        hallDropdown.appendChild(option);
+                    });
+                })
+                .catch(error => console.error("Error fetching halls:", error));
+        }
+    </script>
+}

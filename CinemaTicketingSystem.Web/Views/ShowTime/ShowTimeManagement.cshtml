@@ -1,0 +1,117 @@
+﻿@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Show Time Management";
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-primary">🎬 Show Time Management</h2>
+
+    <!-- Search Section -->
+    <div class="card shadow-sm rounded-4 mb-4 p-4">
+        <h4 class="fw-bold">🔍 Search Show Times</h4>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <select id="searchType" class="form-select">
+                    <option value="movie">Search by Movie</option>
+                    <option value="theatre">Search by Theatre</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" id="searchQuery" class="form-control" placeholder="Enter your search term..." />
+            </div>
+            <div class="col-md-4 text-center">
+                <button class="btn btn-primary px-4" onclick="searchShowTimes()">🔍 Search</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Show Time Button -->
+    <div class="text-center mb-4">
+        <a asp-controller="ShowTime" asp-action="AddShowTime" class="btn btn-success px-5">➕ Add New Show Time</a>
+    </div>
+
+    <!-- Show Times List Section -->
+    <div class="card shadow-sm rounded-4 p-4">
+        <h4 class="fw-bold">📋 Show Times List</h4>
+        <div id="showTimeList" class="row g-4">
+            <!-- Dynamic cards for Show Times will be populated here -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Fetch and render show times
+        function renderShowTimes(showTimes) {
+            const showTimeList = document.getElementById('showTimeList');
+            showTimeList.innerHTML = ''; // Clear the existing cards
+
+            if (showTimes.length === 0) {
+                showTimeList.innerHTML = '<p class="text-muted text-center">No Show Times found.</p>';
+                return;
+            }
+
+            showTimes.forEach(showTime => {
+                const card = `
+                    <div class="col-md-4">
+                        <div class="card shadow-sm rounded-4 p-3">
+                            <h5 class="fw-bold text-primary">${showTime.movie}</h5>
+                            <p><strong>Theatre:</strong> ${showTime.theatre}</p>
+                            <p><strong>Hall:</strong> ${showTime.hall}</p>
+                            <p><strong>Date:</strong> ${showTime.showDate}</p>
+                            <p><strong>Time:</strong> ${showTime.startTime} - ${showTime.endTime}</p>
+                            <p><strong>Price:</strong> $${showTime.price}</p>
+                            <div class="text-center">
+                                <button class="btn btn-sm btn-warning me-2" onclick="editShowTime(${showTime.showTimeId})">✏️ Edit</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteShowTime(${showTime.showTimeId})">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                showTimeList.insertAdjacentHTML('beforeend', card);
+            });
+        }
+
+        // Search Show Times
+        function searchShowTimes() {
+            const searchType = document.getElementById('searchType').value;
+            const searchQuery = document.getElementById('searchQuery').value.trim();
+
+            if (!searchQuery) {
+                //alert("Please enter a search term.");
+                return;
+            }
+
+            fetch(`/ShowTime/SearchShowTimes?filterBy=${searchType}&query=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.json())
+                .then(showTimes => renderShowTimes(showTimes))
+                .catch(error => console.error("Error fetching show times:", error));
+        }
+
+        // Edit Show Time
+        function editShowTime(showTimeId) {
+            window.location.href = `/ShowTime/Edit?showTimeId=${showTimeId}`;
+        }
+
+        // Delete Show Time
+        function deleteShowTime(showTimeId) {
+            if (!confirm("Are you sure you want to delete this Show Time?")) {
+                return;
+            }
+
+            fetch(`/ShowTime/Delete?showTimeId=${showTimeId}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        alert("Show Time deleted successfully.");
+                        searchShowTimes(); // Refresh the list
+                    } else {
+                        alert("Failed to delete Show Time.");
+                    }
+                })
+                .catch(error => console.error("Error deleting show time:", error));
+        }
+
+        // Fetch initial Show Times
+        searchShowTimes();
+    </script>
+}

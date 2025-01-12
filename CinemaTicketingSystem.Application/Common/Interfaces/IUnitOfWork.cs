@@ -12,6 +12,7 @@ namespace CinemaTicketingSystem.Application.Common.Interfaces
         ITheatreRepository Theatres { get; }
         IHallRepository Halls { get; }
         ISeatRepository Seats { get; }
+        IShowtimeRepository ShowTimes { get; }
         void Save();
     }
 }
