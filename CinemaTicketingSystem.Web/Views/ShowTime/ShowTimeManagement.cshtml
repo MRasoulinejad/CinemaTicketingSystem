@@ -6,6 +6,26 @@
 <div class="container py-4">
     <h2 class="text-center mb-4 fw-bold text-primary">🎬 Show Time Management</h2>
 
+    @{
+        if (TempData["success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>🎉 Success!</strong> @TempData["success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        if (TempData["error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>🚨 Error!</strong> @TempData["error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+    }
+
+
+
     <!-- Search Section -->
     <div class="card shadow-sm rounded-4 mb-4 p-4">
         <h4 class="fw-bold">🔍 Search Show Times</h4>
