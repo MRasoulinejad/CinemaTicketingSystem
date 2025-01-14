@@ -189,10 +189,12 @@ namespace CinemaTicketingSystem.Web.Controllers
 
 
         [HttpGet]
-        public IActionResult EditShowTime(int id)
+        public IActionResult EditShowTime(int showTimeId)
         {
-            var showTime = _unitOfWork.ShowTimes.Get(s => s.ShowTimeId == id);
+            var showTime = _unitOfWork.ShowTimes.Get(s => s.ShowTimeId == showTimeId);
             if (showTime == null) return NotFound();
+
+            var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
 
             var model = new EditShowTimeVM
             {
@@ -204,7 +206,9 @@ namespace CinemaTicketingSystem.Web.Controllers
                 MovieId = showTime.MovieId,
                 Price = showTime.Price,
                 Theatres = _unitOfWork.Theatres.GetAll().ToList(),
-                Movies = _unitOfWork.Movies.GetAll().ToList()
+                Movies = _unitOfWork.Movies.GetAll().ToList(),
+                HallId = hall.HallId,
+                HallName = hall.HallName
             };
 
             return View(model);
@@ -227,6 +231,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             showTime.ShowTimeStart = model.ShowTimeStart;
             showTime.ShowTimeEnd = model.ShowTimeEnd;
             showTime.TheatreId = model.TheatreId;
+            showTime.HallId = model.HallId;
             showTime.MovieId = model.MovieId;
             showTime.Price = model.Price;
 

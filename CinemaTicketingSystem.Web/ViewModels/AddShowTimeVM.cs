@@ -32,5 +32,6 @@ namespace CinemaTicketingSystem.Web.ViewModels
 
         [ValidateNever]
         public int HallId { get; set; } = 0;
+
     }
 }
