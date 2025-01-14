@@ -89,30 +89,47 @@ namespace CinemaTicketingSystem.Web.Controllers
 
 
         [HttpGet]
-        public IActionResult SearchShowTimes(string query, string filterBy)
+        public async Task<IActionResult> SearchShowTimes(string query, string filterBy)
         {
-            // Load all ShowTimes with related properties
-            var showTimes = _unitOfWork.ShowTimes.GetAll(includeProperties: "Theatre,Movie").ToList();
 
-            // Apply search filter if query is provided
-            if (!string.IsNullOrWhiteSpace(query))
+            // Validate input
+            if (string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(filterBy))
             {
-                switch (filterBy?.ToLower())
-                {
-                    case "movie":
-                        showTimes = showTimes.Where(s => s.Movie.Title.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
-                        break;
-                    case "theatre":
-                        showTimes = showTimes.Where(s => s.Theatre.TheatreName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
-                        break;
-                    default:
-                        // Optionally handle invalid filterBy
-                        return BadRequest(new { message = "Invalid filterBy value. Use 'movie' or 'theatre'." });
-                }
+                return BadRequest(new { message = "Query and filterBy are required." });
             }
 
-            // Load all Halls for mapping
-            var halls = _unitOfWork.Halls.GetAll().ToList();
+            List<int> relevantIds = new List<int>();
+
+            // Filter based on the criteria
+            switch (filterBy.ToLower())
+            {
+                case "movie":
+                    // Fetch relevant MovieIds
+                    relevantIds = _unitOfWork.Movies
+                        .GetAll()
+                        .Where(m => m.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
+                        .Select(m => m.MovieId)
+                        .ToList();
+                    break;
+
+                case "theatre":
+                    // Fetch relevant TheatreIds
+                    relevantIds = _unitOfWork.Theatres
+                        .GetAll()
+                        .Where(t => t.TheatreName.Contains(query, StringComparison.OrdinalIgnoreCase))
+                        .Select(t => t.TheatreId)
+                        .ToList();
+                    break;
+
+                default:
+                    return BadRequest(new { message = "Invalid filterBy value. Use 'movie' or 'theatre'." });
+            }
+
+            // Fetch ShowTimes based on the filtered IDs
+            var showTimes = filterBy.ToLower() == "movie"
+                ? _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.MovieId))
+                : _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.TheatreId));
+
 
             // Project the result
             var result = showTimes.Select(s => new
@@ -121,14 +138,54 @@ namespace CinemaTicketingSystem.Web.Controllers
                 ShowDate = s.ShowDate.ToShortDateString(),
                 StartTime = s.ShowTimeStart.ToString(@"hh\:mm"),
                 EndTime = s.ShowTimeEnd.ToString(@"hh\:mm"),
-                Theatre = s.Theatre?.TheatreName ?? "N/A",
-                Hall = halls.FirstOrDefault(h => h.HallId == s.HallId)?.HallName ?? "N/A",
-                Movie = s.Movie?.Title ?? "N/A",
+                Theatre = _unitOfWork.Theatres.GetAll().FirstOrDefault(t => t.TheatreId == s.TheatreId)?.TheatreName ?? "N/A",
+                Hall = _unitOfWork.Halls.GetAll().FirstOrDefault(h => h.HallId == s.HallId)?.HallName ?? "N/A",
+                Movie = _unitOfWork.Movies.GetAll().FirstOrDefault(t => t.MovieId == s.MovieId)?.Title ?? "N/A",
                 Price = s.Price
             }).ToList();
 
             return Json(result);
+
+
+            //// Load all ShowTimes with related properties
+            //var showTimes = _unitOfWork.ShowTimes.GetAll(includeProperties: "Theatre,Movie").ToList();
+
+            //// Apply search filter if query is provided
+            //if (!string.IsNullOrWhiteSpace(query))
+            //{
+            //    switch (filterBy?.ToLower())
+            //    {
+            //        case "movie":
+            //            showTimes = showTimes.Where(s => s.Movie.Title.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+            //            break;
+            //        case "theatre":
+            //            showTimes = showTimes.Where(s => s.Theatre.TheatreName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+            //            break;
+            //        default:
+            //            // Optionally handle invalid filterBy
+            //            return BadRequest(new { message = "Invalid filterBy value. Use 'movie' or 'theatre'." });
+            //    }
+            //}
+
+            //// Load all Halls for mapping
+            //var halls = _unitOfWork.Halls.GetAll().ToList();
+
+            //// Project the result
+            //var result = showTimes.Select(s => new
+            //{
+            //    s.ShowTimeId,
+            //    ShowDate = s.ShowDate.ToShortDateString(),
+            //    StartTime = s.ShowTimeStart.ToString(@"hh\:mm"),
+            //    EndTime = s.ShowTimeEnd.ToString(@"hh\:mm"),
+            //    Theatre = s.Theatre?.TheatreName ?? "N/A",
+            //    Hall = halls.FirstOrDefault(h => h.HallId == s.HallId)?.HallName ?? "N/A",
+            //    Movie = s.Movie?.Title ?? "N/A",
+            //    Price = s.Price
+            //}).ToList();
+
+            //return Json(result);
         }
+
 
 
         [HttpGet]
@@ -181,9 +238,9 @@ namespace CinemaTicketingSystem.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult DeleteShowTime(int id)
+        public IActionResult DeleteShowTime(int showTimeId)
         {
-            var showTime = _unitOfWork.ShowTimes.Get(s => s.ShowTimeId == id);
+            var showTime = _unitOfWork.ShowTimes.Get(s => s.ShowTimeId == showTimeId);
             if (showTime == null) return NotFound();
 
             _unitOfWork.ShowTimes.Remove(showTime);

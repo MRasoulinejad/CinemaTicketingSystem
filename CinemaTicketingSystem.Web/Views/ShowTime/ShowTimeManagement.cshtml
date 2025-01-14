@@ -99,7 +99,7 @@
                 return;
             }
 
-            fetch(`/ShowTime/Delete?showTimeId=${showTimeId}`, { method: 'POST' })
+            fetch(`/ShowTime/DeleteShowTime?showTimeId=${showTimeId}`, { method: 'POST' })
                 .then(response => {
                     if (response.ok) {
                         alert("Show Time deleted successfully.");
