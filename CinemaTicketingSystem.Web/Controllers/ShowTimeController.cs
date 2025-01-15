@@ -3,6 +3,7 @@ using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace CinemaTicketingSystem.Web.Controllers
@@ -243,17 +244,28 @@ namespace CinemaTicketingSystem.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult DeleteShowTime(int showTimeId)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteShowTime([FromBody]int showTimeId)
         {
             var showTime = _unitOfWork.ShowTimes.Get(s => s.ShowTimeId == showTimeId);
-            if (showTime == null) return NotFound();
 
-            _unitOfWork.ShowTimes.Remove(showTime);
-            _unitOfWork.Save();
+            if (showTime != null)
+            {
+                try
+                {
+                    _unitOfWork.ShowTimes.Remove(showTime);
+                    _unitOfWork.Save();
 
-            TempData["success"] = "Show Time deleted successfully!";
-            return RedirectToAction("ShowTimeManagement");
+
+                    return Json(new { success = true });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
+
+            }
+            return Json(new { success = false, message = "Show Time is Null!" });
         }
-
     }
 }
