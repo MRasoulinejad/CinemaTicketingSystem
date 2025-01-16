@@ -21,7 +21,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             var vm = new ReservationViewModel
             {
                 MovieId = movieId,
-                TheatreId = theatreId
+                TheatreId = theatreId,
             };
             ViewData["HeroImageUrl"] = "/images/hero-banner.jpg";
             ViewData["HeroTitle"] = "Lights, Camera, Action!";
@@ -64,6 +64,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
             return Json(showTimes);
         }
+
 
 
     }

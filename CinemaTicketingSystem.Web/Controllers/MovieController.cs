@@ -72,9 +72,9 @@ namespace CinemaTicketingSystem.Web.Controllers
                 //    new Movie { MovieId = 9, Title = "Joker", Genre = "Drama", Duration = 122, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-9)), Poster = "/images/movie9.jpg" }
                 //};
 
-                var movies = _unitOfWork.Movies.GetAll().Take(9).ToList();
+                var movie = _unitOfWork.Movies.Get(x => x.MovieId == id);
 
-                Movie movie = movies.Find(x => x.MovieId == id);
+
                 return View(movie);
             }
             else

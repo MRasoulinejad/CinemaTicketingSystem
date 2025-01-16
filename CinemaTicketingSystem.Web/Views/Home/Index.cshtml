@@ -26,7 +26,7 @@
                         </div>
                         <div class="card-footer text-center">
                             <a asp-controller="Movie" asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-primary btn-sm">View Details</a>
-                            <a asp-controller="Reservation" asp-action="Create" asp-route-id="@movie.MovieId" class="btn btn-success btn-sm">Book Now</a>
+                            <a asp-controller="Reservation" asp-action="CreateReservation" asp-route-movieId="@movie.MovieId" class="btn btn-success btn-sm">Book Now</a>
                         </div>
                     </div>
                 </div>

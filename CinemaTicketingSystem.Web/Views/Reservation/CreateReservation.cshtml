@@ -16,7 +16,7 @@
                 <select id="movieDropdown" class="form-select" asp-for="MovieId">
                     
                     @if(Model.MovieId != null){
-                        <option value="@Model.MovieId">-- All Movies --</option>
+                        <option value="@Model.MovieId" selected>-- @Model.MovieTitle --</option>
                     }else{
                         <option value="">-- All Movies --</option>
                     }

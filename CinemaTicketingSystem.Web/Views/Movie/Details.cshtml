@@ -16,7 +16,7 @@
             <p>⏳ Duration: @Model.Duration min</p>
             <p>📅 Release Date: @Model.ReleaseDate.ToString("yyyy-MM-dd")</p>
             <p class="lead">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vel tortor orci. Aenean eget dolor sit amet odio tristique malesuada.
+                @Model.Description
             </p>
             <div class="d-grid gap-2 d-md-flex">
                 <a asp-controller="Reservation" asp-action="CreateReservation" asp-route-movieId="@Model.MovieId" class="btn btn-success btn-lg">🎟️ Book Now</a>
