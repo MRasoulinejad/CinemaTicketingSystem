@@ -1,0 +1,135 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Search Show Times";
+}
+@model ReservationViewModel
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-primary">🎟 Search Show Times</h2>
+
+    <!-- Search Section -->
+    <div class="card shadow-sm rounded-4 p-4 mb-4">
+        <h4 class="fw-bold">🔍 Filters</h4>
+        <div class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <label for="movieDropdown" class="form-label fw-bold">🎬 Select Movie</label>
+                <select id="movieDropdown" class="form-select" asp-for="MovieId">
+                    
+                    @if(Model.MovieId != null){
+                        <option value="@Model.MovieId">-- All Movies --</option>
+                    }else{
+                        <option value="">-- All Movies --</option>
+                    }
+                    <!-- Movies will be dynamically populated -->
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="dateInput" class="form-label fw-bold">📅 Select Date</label>
+                <input id="dateInput" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-4">
+                <label for="theatreDropdown" class="form-label fw-bold">🏢 Select Theatre</label>
+                <select id="theatreDropdown" class="form-select" asp-for="TheatreId">
+
+                    @if (Model.TheatreId != null)
+                    {
+                        <option value="@Model.TheatreId">-- All Theatres --</option>
+                    }
+                    else
+                    {
+                        <option value="">-- All Theatres --</option>
+                    }
+                    <!-- Theatres will be dynamically populated -->
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Show Time Results -->
+    <div class="card shadow-sm rounded-4 p-4">
+        <h4 class="fw-bold">📋 Available Show Times</h4>
+        <div id="showTimeList" class="row g-4">
+            <!-- Show Time cards will be dynamically populated -->
+            <p class="text-muted text-center">No Show Times found. Please adjust your filters.</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const movieDropdown = document.getElementById("movieDropdown");
+            const theatreDropdown = document.getElementById("theatreDropdown");
+            const dateInput = document.getElementById("dateInput");
+            const showTimeList = document.getElementById("showTimeList");
+
+            // Fetch and populate dropdowns
+            function populateDropdowns() {
+                fetch("/Reservation/GetMoviesAndTheatres")
+                    .then(response => response.json())
+                    .then(data => {
+                        // Populate Movies
+                        movieDropdown.innerHTML = '<option value="">-- All Movies --</option>';
+                        data.movies.forEach(movie => {
+                            movieDropdown.innerHTML += `<option value="${movie.movieId}">${movie.title}</option>`;
+                        });
+
+                        // Populate Theatres
+                        theatreDropdown.innerHTML = '<option value="">-- All Theatres --</option>';
+                        data.theatres.forEach(theatre => {
+                            theatreDropdown.innerHTML += `<option value="${theatre.theatreId}">${theatre.name}</option>`;
+                        });
+                    })
+                    .catch(error => console.error("Error populating dropdowns:", error));
+            }
+
+            // Fetch and render show times
+            function fetchShowTimes() {
+                const movieId = movieDropdown.value || null;
+                const theatreId = theatreDropdown.value || null;
+                const showDate = dateInput.value;
+
+                fetch("/Reservation/GetFilteredShowTimes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ movieId, theatreId, showDate })
+                })
+                    .then(response => response.json())
+                    .then(showTimes => renderShowTimes(showTimes))
+                    .catch(error => console.error("Error fetching showtimes:", error));
+            }
+
+            function renderShowTimes(showTimes) {
+                showTimeList.innerHTML = "";
+                if (showTimes.length === 0) {
+                    showTimeList.innerHTML = '<p class="text-muted text-center">No Show Times found for the selected filters.</p>';
+                    return;
+                }
+
+                showTimes.forEach(st => {
+                    const card = `
+                        <div class="col-md-4">
+                            <div class="card shadow-sm rounded-4 p-3">
+                                <h5 class="fw-bold text-primary">${st.movieTitle}</h5>
+                                <p><strong>Theatre:</strong> ${st.theatreName}</p>
+                                <p><strong>Time:</strong> ${st.startTime} - ${st.endTime}</p>
+                                <p><strong>Price:</strong> $${st.price}</p>
+                                <button class="btn btn-success w-100 mt-2">Book Now</button>
+                            </div>
+                        </div>
+                    `;
+                    showTimeList.insertAdjacentHTML("beforeend", card);
+                });
+            }
+
+            // Event Listeners
+            movieDropdown.addEventListener("change", fetchShowTimes);
+            theatreDropdown.addEventListener("change", fetchShowTimes);
+            dateInput.addEventListener("change", fetchShowTimes);
+
+            // Initialize
+            populateDropdowns();
+            fetchShowTimes();
+        });
+    </script>
+}
