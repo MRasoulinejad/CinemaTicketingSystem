@@ -23,6 +23,9 @@ namespace CinemaTicketingSystem.Web.Controllers
                 MovieId = movieId,
                 TheatreId = theatreId
             };
+            ViewData["HeroImageUrl"] = "/images/hero-banner.jpg";
+            ViewData["HeroTitle"] = "Lights, Camera, Action!";
+            ViewData["HeroSubtitle"] = "Catch the latest blockbusters and reserve your seats now.";
             return View(vm);
         }
 
