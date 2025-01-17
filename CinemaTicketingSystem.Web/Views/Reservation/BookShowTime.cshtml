@@ -1,4 +1,137 @@
 ﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Show Time Details";
+}
+@model BookShowTimeVM
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-primary">🎥 Show Time Details</h2>
+
+    <!-- Top Section: Movie Poster and Details -->
+    <div class="row mb-4">
+        <div class="col-md-4 text-center">
+            <img src="@Model.Movie.Poster" alt="@Model.Movie.Title Poster" class="img-fluid shadow rounded-4" />
+        </div>
+        <div class="col-md-8">
+            <div class="card shadow-sm rounded-4 p-4">
+                <h4 class="fw-bold text-primary">@Model.Movie.Title</h4>
+                <p><strong>Genre:</strong> @Model.Movie.Genre</p>
+                <p><strong>Duration:</strong> @Model.Movie.Duration mins</p>
+                <p><strong>Synopsis:</strong> @Model.Movie.Description</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Middle Section: Show Time and Hall Details -->
+    <div class="card shadow-sm rounded-4 p-4 mb-4">
+        <h4 class="fw-bold">📝 Showtime and Hall Information</h4>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <p class="mb-1 fw-bold">📅 <span class="text-muted">Date:</span></p>
+                <h5 class="text-primary">@Model.ShowTime.ShowDate.ToString("MMMM dd, yyyy")</h5>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-1 fw-bold">⏰ <span class="text-muted">Time:</span></p>
+                <h5 class="text-primary">@Model.ShowTime.ShowTimeStart - @Model.ShowTime.ShowTimeEnd</h5>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-1 fw-bold">🏢 <span class="text-muted">Theatre:</span></p>
+                <h5 class="text-primary">@Model.Theatre.TheatreName</h5>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-1 fw-bold">🏠 <span class="text-muted">Hall:</span></p>
+                <h5 class="text-primary">@Model.Hall.HallName</h5>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-1 fw-bold">💵 <span class="text-muted">Price:</span></p>
+                <h5 class="text-primary">$@Model.ShowTime.Price</h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seat Selection Section -->
+    <div class="card shadow-sm rounded-4 p-4 mb-4">
+        <h4 class="fw-bold">🎟️ Select Number of Seats</h4>
+        <div class="row g-4 align-items-center">
+            <div class="col-md-12 text-center">
+                <button type="button" class="btn btn-outline-secondary" onclick="updateSeatCount(-1)">➖</button>
+                <span id="seatCount" class="mx-3 fw-bold fs-4">1</span>
+                <button type="button" class="btn btn-outline-secondary" onclick="updateSeatCount(1)">➕</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Section: Action Buttons -->
+    <div class="text-center mt-4">
+        <a href="javascript:void(0);" onclick="proceedToReservation()" class="btn btn-success btn-lg px-5 me-3">Proceed ➡️</a>
+        <a href="/" class="btn btn-secondary btn-lg px-5">Cancel ❌</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let seatCount = 1;
+
+        function updateSeatCount(amount) {
+            seatCount += amount;
+            if (seatCount < 1) seatCount = 1;
+            document.getElementById("seatCount").textContent = seatCount;
+        }
+
+        function proceedToReservation() {
+            const showTimeId = @Model.ShowTime.ShowTimeId;
+            const url = `/Reservation/ProceedBookingSeat?showTimeId=${showTimeId}&seatCount=${seatCount}`;
+            window.location.href = url;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log("Show Time Details Page Loaded");
+        });
+    </script>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* @{
     Layout = "_Layout"; 
     ViewData["Title"] = "Show Time Details";
 }
@@ -65,3 +198,4 @@
 }
 
 
+ *@

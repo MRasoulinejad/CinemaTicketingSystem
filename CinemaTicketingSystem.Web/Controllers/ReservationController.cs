@@ -84,6 +84,14 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View(model);
         }
 
+        public IActionResult ProceedBookingSeat(int showTimeId, int seatCount)
+        {
+
+
+
+
+            return View();
+        }
 
     }
 }
