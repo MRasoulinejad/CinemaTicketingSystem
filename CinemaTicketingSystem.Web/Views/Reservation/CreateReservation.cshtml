@@ -14,10 +14,13 @@
             <div class="col-md-4">
                 <label for="movieDropdown" class="form-label fw-bold">🎬 Select Movie</label>
                 <select id="movieDropdown" class="form-select" asp-for="MovieId">
-                    
-                    @if(Model.MovieId != null){
+
+                    @if (Model.MovieId != null)
+                    {
                         <option value="@Model.MovieId" selected>-- @Model.MovieTitle --</option>
-                    }else{
+                    }
+                    else
+                    {
                         <option value="">-- All Movies --</option>
                     }
                     <!-- Movies will be dynamically populated -->
@@ -57,6 +60,13 @@
 
 @section Scripts {
     <script>
+
+                function bookShowTime(showTimeId) {
+            const url = `/Reservation/BookShowTime?showTimeId=${showTimeId}`;
+            console.log("Redirecting to:", url);
+            window.location.href = url;
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             const movieDropdown = document.getElementById("movieDropdown");
             const theatreDropdown = document.getElementById("theatreDropdown");
@@ -114,13 +124,23 @@
                                 <p><strong>Theatre:</strong> ${st.theatreName}</p>
                                 <p><strong>Time:</strong> ${st.startTime} - ${st.endTime}</p>
                                 <p><strong>Price:</strong> $${st.price}</p>
-                                <button class="btn btn-success w-100 mt-2">Book Now</button>
+                                <button class="btn btn-success w-100 mt-2" onclick="bookShowTime(${st.showTimeId})">Book Now</button>
                             </div>
                         </div>
                     `;
                     showTimeList.insertAdjacentHTML("beforeend", card);
                 });
             }
+
+            //BookShowTime send Id
+            function bookShowTime(showTimeId) {
+            // Redirect to another page (GET request)
+            console.log("Redirecting to:");
+            window.location.href = `/Reservation/BookShowTime?showTimeId=${showTimeId}`;
+        }
+
+
+
 
             // Event Listeners
             movieDropdown.addEventListener("change", fetchShowTimes);

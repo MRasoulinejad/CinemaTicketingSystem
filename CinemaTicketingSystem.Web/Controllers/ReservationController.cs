@@ -65,12 +65,25 @@ namespace CinemaTicketingSystem.Web.Controllers
             return Json(showTimes);
         }
 
+        
         public IActionResult BookShowTime(int showTimeId)
         {
             var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
+            var movie = _unitOfWork.Movies.Get(x => x.MovieId == showTime.MovieId);
+            var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
+            var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == showTime.TheatreId);
 
-            return View(showTime);
+            BookShowTimeVM model = new BookShowTimeVM
+            {
+                ShowTime = showTime,
+                Movie = movie,
+                Hall = hall,
+                Theatre = theatre
+            };
+
+            return View(model);
         }
+
 
     }
 }
