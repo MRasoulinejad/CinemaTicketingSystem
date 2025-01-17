@@ -207,3 +207,21 @@ body {
 
 
 
+/* Seat */
+.seat {
+    cursor: pointer;
+}
+
+.reserved-seat {
+    background-color: #6c757d; /* Gray for reserved */
+    pointer-events: none; /* Prevent click events */
+    cursor: not-allowed;
+}
+
+.available-seat {
+    background-color: #0d6efd; /* Blue for available */
+}
+
+.selected-seat {
+    background-color: #28a745; /* Green for selected */
+}

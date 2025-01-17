@@ -3,6 +3,7 @@ using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CinemaTicketingSystem.Web.Controllers
 {
@@ -86,11 +87,52 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         public IActionResult ProceedBookingSeat(int showTimeId, int seatCount)
         {
+            var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
+            if (showTime == null)
+            {
+                return NotFound("ShowTime not found.");
+            }
+
+            var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
+            if (hall == null)
+            {
+                return NotFound("Hall not found.");
+            }
 
 
+            var sectionInfo = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
+                .GroupBy(s => s.SectionName)
+                .Select(group => new
+                {
+                    SectionName = group.Key,
+                    SectionCount = group.Count()
+                }).ToList();
 
 
-            return View();
+            var seats = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
+                .Select(s => new SeatVM
+                {
+                    SeatId = s.SeatId,
+                    SectionName = s.SectionName,
+                    SeatNumber = s.SeatNumber,
+                    IsReserved = s.IsReserved
+                }).ToList();
+
+            var model = new ProceedBookingSeatVM
+            {
+                ShowTimeId = showTimeId,
+                SeatCount = seatCount,
+                HallName = hall.HallName,
+                Seats = seats,
+                Sections = sectionInfo.Select(s => new SectionVM
+                {
+                    SectionName = s.SectionName,
+                    SectionCount = s.SectionCount
+                }).ToList()
+            };
+
+
+            return View(model);
         }
 
     }
