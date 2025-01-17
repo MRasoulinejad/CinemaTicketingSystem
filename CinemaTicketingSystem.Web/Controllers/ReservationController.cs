@@ -65,7 +65,12 @@ namespace CinemaTicketingSystem.Web.Controllers
             return Json(showTimes);
         }
 
+        public IActionResult BookShowTime(int showTimeId)
+        {
+            var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
 
+            return View(showTime);
+        }
 
     }
 }
