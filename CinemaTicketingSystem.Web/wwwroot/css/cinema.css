@@ -212,16 +212,22 @@ body {
     cursor: pointer;
 }
 
+.available-seat {
+    background-color: #0d6efd; /* Blue */
+    cursor: pointer;
+}
+
 .reserved-seat {
-    background-color: #6c757d; /* Gray for reserved */
-    pointer-events: none; /* Prevent click events */
+    background-color: #6c757d; /* Gray */
     cursor: not-allowed;
 }
 
-.available-seat {
-    background-color: #0d6efd; /* Blue for available */
+.temporary-reserved-seat {
+    background-color: #ffa500; /* Orange */
+    cursor: not-allowed;
 }
 
 .selected-seat {
-    background-color: #28a745; /* Green for selected */
+    background-color: #28a745; /* Green */
+    cursor: pointer;
 }

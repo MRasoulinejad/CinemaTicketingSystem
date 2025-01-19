@@ -8,6 +8,174 @@
 <div class="container py-4">
     <h2 class="text-center mb-4 fw-bold text-primary">🎟️ Seat Selection</h2>
 
+    <!-- Seat Key -->
+    <div class="d-flex justify-content-center align-items-center mb-4">
+        <div class="d-flex flex-column align-items-center mx-3">
+            <div class="seat available-seat" style="width: 30px; height: 30px;"></div>
+            <small class="text-muted mt-1">Available</small>
+        </div>
+        <div class="d-flex flex-column align-items-center mx-3">
+            <div class="seat reserved-seat" style="width: 30px; height: 30px;"></div>
+            <small class="text-muted mt-1">Reserved</small>
+        </div>
+        <div class="d-flex flex-column align-items-center mx-3">
+            <div class="seat temporary-reserved-seat" style="width: 30px; height: 30px;"></div>
+            <small class="text-muted mt-1">Temporary Reserved</small>
+        </div>
+        <div class="d-flex flex-column align-items-center mx-3">
+            <div class="seat selected-seat" style="width: 30px; height: 30px;"></div>
+            <small class="text-muted mt-1">Selected</small>
+        </div>
+    </div>
+
+
+
+    <!-- Screen Label -->
+    <div class="text-center mb-4">
+        <h5 class="fw-bold text-secondary">📽️ Screen</h5>
+        <hr class="my-2" style="height: 5px; background-color: black; border-radius: 5px; width: 80%; margin: 0 auto;">
+    </div>
+
+    <!-- Seat Layout -->
+    <div class="seat-layout">
+        @foreach (var sections in Model.Sections)
+        {
+            <div class="section mb-4">
+                <h6 class="fw-bold text-secondary">🎟️ Section @sections.SectionName</h6>
+                <div class="d-flex flex-wrap justify-content-center align-items-center">
+                    @foreach (var seat in Model.Seats.Where(s => s.SectionName == sections.SectionName))
+                    {
+                        <div 
+                            class="seat mx-1 my-1 rounded text-center d-flex justify-content-center align-items-center 
+                                   @(seat.IsReserved ? "reserved-seat" : 
+                                    seat.IsTemporaryReserved ? "temporary-reserved-seat" : 
+                                    "available-seat")"
+                            data-seat-id="@seat.SeatId"
+                            data-is-reserved="@seat.IsReserved"
+                            data-is-temporary-reserved="@seat.IsTemporaryReserved"
+                            onclick="@(seat.IsReserved || seat.IsTemporaryReserved ? "" : "selectSeat(this)")"
+                            style="
+                                width: 50px;
+                                height: 50px;
+                                line-height: 50px;
+                                font-size: 14px;
+                                font-weight: bold;
+                                color: white;
+                                box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+                                border: 1px solid #ddd;
+                            ">
+                            @seat.SeatNumber
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="text-center mt-5">
+        <button id="proceedButton" class="btn btn-lg btn-success px-5 me-3" disabled>Proceed ➡️</button>
+        <a href="/" class="btn btn-lg btn-secondary px-5">Cancel ❌</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let selectedSeats = [];
+        const maxSeats = @Model.SeatCount; // Maximum seats the user can select
+
+        function selectSeat(seatElement) {
+            const seatId = seatElement.dataset.seatId;
+
+            if (selectedSeats.includes(seatId)) {
+                // Deselect seat
+                selectedSeats = selectedSeats.filter(id => id !== seatId);
+                seatElement.classList.remove("selected-seat");
+                seatElement.classList.add("available-seat");
+            } else {
+                if (selectedSeats.length >= maxSeats) {
+                    alert(`You can only select up to ${maxSeats} seats.`);
+                    return;
+                }
+                // Select seat
+                selectedSeats.push(seatId);
+                seatElement.classList.remove("available-seat");
+                seatElement.classList.add("selected-seat");
+            }
+
+            // Enable or disable the Proceed button based on selection
+            document.getElementById("proceedButton").disabled = selectedSeats.length === 0;
+        }
+
+        document.getElementById("proceedButton").addEventListener("click", function () {
+            fetch("/Reservation/ConfirmCheckout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    showTimeId: @Model.ShowTimeId,
+                    seatIds: selectedSeats
+                })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to confirm seats.");
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert("Seats confirmed successfully!");
+                    window.location.href = "/Reservation/CompleteBooking";
+                } else {
+                    alert(data.message || "Failed to confirm seats. Try again.");
+                }
+            })
+            .catch(error => console.error("Error confirming seats:", error));
+        });
+    </script>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* @model ProceedBookingSeatVM
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Seat Selection";
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-primary">🎟️ Seat Selection</h2>
+
     <!-- Screen Label -->
     <div class="text-center mb-4">
         <h5 class="fw-bold text-secondary">📽️ Screen</h5>
@@ -111,3 +279,4 @@
 
     </script>
 }
+ *@
