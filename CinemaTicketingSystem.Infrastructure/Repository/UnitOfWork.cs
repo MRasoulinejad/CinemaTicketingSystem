@@ -1,4 +1,5 @@
 ﻿using CinemaTicketingSystem.Application.Common.Interfaces;
+using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,9 @@ namespace CinemaTicketingSystem.Infrastructure.Repository
 
         public IShowtimeRepository ShowTimes { get; private set; }
 
+        public ITemporarySeatReservationRepository TemporarySeatReservations { get; private set; }
+
+
         public UnitOfWork(ApplicationDbContext db)
         {
             _db = db;
@@ -29,6 +33,7 @@ namespace CinemaTicketingSystem.Infrastructure.Repository
             Halls = new HallRepository(_db);
             Seats = new SeatRepository(_db);
             ShowTimes = new ShowTimeRepository(_db);
+            TemporarySeatReservations = new TemporarySeatReservationRepository(_db);
         }
 
         public void Save()

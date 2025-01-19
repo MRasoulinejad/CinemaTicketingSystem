@@ -124,9 +124,9 @@ namespace CinemaTicketingSystem.Web.Controllers
                     SectionName = s.SectionName,
                     SeatNumber = s.SeatNumber,
                     IsReserved = s.IsReserved,
-                    //IsTemporaryReserved = _unitOfWork.TemporarySeatReservations
-                     //   .Any(r => r.SeatId == s.SeatId && r.ShowTimeId == showTimeId &&
-                     //             r.ReservedAt > now.AddMinutes(-5)) // Check temporary reservation within 5 minutes
+                    IsTemporaryReserved = _unitOfWork.TemporarySeatReservations
+                        .Any(r => r.SeatId == s.SeatId && r.ShowTimeId == showTimeId &&
+                                  r.ReservedAt > now.AddMinutes(-5)) // Check temporary reservation within 5 minutes
                 }).ToList();
 
             // Populate view model
