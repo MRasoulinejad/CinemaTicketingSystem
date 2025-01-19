@@ -23,6 +23,7 @@ namespace CinemaTicketingSystem.Infrastructure.Data
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<TemporarySeatReservation> TemporarySeatReservations { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -55,6 +56,24 @@ namespace CinemaTicketingSystem.Infrastructure.Data
                     TrailerUrl = "https://www.youtube.com/embed/m8e-FF8MsqU"
                 }
                 );
+
+
+            modelBuilder.Entity<TemporarySeatReservation>(entity =>
+            {
+                entity.HasKey(e => e.ReservationId);
+
+                // Define relationship with ShowTime
+                entity.HasOne(e => e.ShowTime)
+                      .WithMany()
+                      .HasForeignKey(e => e.ShowTimeId)
+                      .OnDelete(DeleteBehavior.NoAction); // Prevent cascading deletes
+
+                // Define relationship with Seat
+                entity.HasOne(e => e.Seat)
+                      .WithMany()
+                      .HasForeignKey(e => e.SeatId)
+                      .OnDelete(DeleteBehavior.NoAction); // Prevent cascading deletes
+            });
         }
 
 

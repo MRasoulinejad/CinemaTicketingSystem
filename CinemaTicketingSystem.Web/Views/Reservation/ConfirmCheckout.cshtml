@@ -1,0 +1,90 @@
+﻿@model ConfirmCheckoutVM
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Confirm Booking";
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-primary">🎟️ Confirm Your Booking</h2>
+
+    <!-- Booking Details -->
+    <div class="card shadow-sm rounded-4 p-4">
+        <h4 class="fw-bold">📋 Booking Details</h4>
+        <p><strong>🎬 Movie:</strong> @Model.MovieTitle</p>
+        <p><strong>🏢 Theatre:</strong> @Model.TheatreName</p>
+        <p><strong>📅 Date:</strong> @Model.ShowDate</p>
+        <p><strong>⏰ Time:</strong> @Model.ShowDate</p>
+        @* <p><strong>💺 Seats:</strong> @string.Join(", ", Model.SeatNumbers)</p> *@
+        <p><strong>💵 Total Price:</strong> $@Model.TotalPrice</p>
+
+        <!-- Countdown Timer -->
+        <div class="alert alert-warning text-center mt-4">
+            ⏳ <strong id="timer">05:00</strong> remaining to complete your booking.
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center mt-4">
+            <button id="proceedButton" class="btn btn-lg btn-success px-5">Proceed to Payment</button>
+            <a href="/" class="btn btn-lg btn-danger px-5">Cancel ❌</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const countdownElement = document.getElementById("timer");
+            const proceedButton = document.getElementById("proceedButton");
+
+            // Set the countdown duration (5 minutes)
+            const countdownDuration = 5 * 60; // 5 minutes in seconds
+            let remainingTime = countdownDuration;
+
+            // Update the timer every second
+            const countdownInterval = setInterval(() => {
+                // Calculate minutes and seconds
+                const minutes = Math.floor(remainingTime / 60);
+                const seconds = remainingTime % 60;
+
+                // Update the timer text
+                countdownElement.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+                // Decrease the remaining time
+                remainingTime--;
+
+                // If time is up, disable the proceed button and show an alert
+                if (remainingTime < 0) {
+                    clearInterval(countdownInterval);
+                    proceedButton.disabled = true;
+                    countdownElement.textContent = "Time is up!";
+                    alert("Your reservation has expired.");
+                    window.location.href = "/"; // Redirect to home or another page
+                }
+            }, 1000);
+
+            // Handle proceed button click
+            proceedButton.addEventListener("click", () => {
+                clearInterval(countdownInterval); // Stop the timer
+                // Redirect to payment or proceed with the reservation
+                window.location.href = "/Reservation/Checkout";
+            });
+        });
+    </script>
+}
+
+<style>
+    #timer {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #d9534f; /* Red for urgency */
+    }
+
+    .alert-warning {
+        font-size: 1.2rem;
+    }
+
+    .btn-lg {
+        font-size: 1.2rem;
+    }
+</style>
