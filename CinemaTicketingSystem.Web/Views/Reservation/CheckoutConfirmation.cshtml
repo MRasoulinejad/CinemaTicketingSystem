@@ -1,0 +1,132 @@
+﻿@model CheckoutConfirmationVM
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Checkout Confirmation";
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-primary">🎟️ Checkout Confirmation</h2>
+
+    <div class="row g-4">
+        <!-- Movie Details -->
+        <div class="col-lg-4 text-center">
+            <div class="card shadow-sm rounded-4 p-4">
+                <img src="@Model.PosterUrl" alt="@Model.MovieTitle Poster" class="img-fluid rounded-4 mb-3">
+                <h4 class="fw-bold text-primary">@Model.MovieTitle</h4>
+                <p class="text-muted">@Model.Genre | @Model.Duration mins</p>
+            </div>
+        </div>
+
+        <!-- ShowTime , Seat and User Details -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold text-primary">🎟️ Booking Details</h5>
+                <p><strong>Theatre:</strong> @Model.TheatreName</p>
+                <p><strong>Hall:</strong> @Model.HallName</p>
+                <p><strong>Date:</strong> @Model.ShowDate</p>
+                <p><strong>Time:</strong> @Model.ShowTime</p>
+                <p><strong>Selected Seats:</strong> @string.Join(", ", Model.SelectedSeatNumbers)</p>
+                <p class="fw-bold text-success"><strong>Total Price:</strong> $@Model.TotalPrice</p>
+            </div>
+
+
+            <div class="card shadow-sm rounded-4 p-4 mt-4">
+                <h5 class="fw-bold text-primary">👤 User Information</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Name:</strong> @Model.FirstName @Model.LastName</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Email:</strong> @Model.UserEmail</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Phone Number:</strong> @Model.PhoneNumber</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="text-center mt-5">
+        <form action="/Stripe/Checkout" method="post" class="d-inline-block">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ShowTimeId" value="@Model.ShowTimeId" />
+            <input type="hidden" name="SeatNumbers" value="@string.Join(",", Model.SelectedSeatNumbers)" />
+            <input type="hidden" name="TotalPrice" value="@Model.TotalPrice" />
+            <button type="submit" class="btn btn-lg btn-success px-5">Proceed to Payment 💳</button>
+        </form>
+        <a href="/" class="btn btn-lg btn-secondary px-5 ms-3">Cancel ❌</a>
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* @model CheckoutConfirmationVM
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Checkout Confirmation";
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-primary">🎟️ Checkout Confirmation</h2>
+
+    <!-- Movie and ShowTime Details -->
+    <div class="card shadow-sm rounded-4 p-4 mb-4">
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <img src="@Model.PosterUrl" alt="@Model.MovieTitle Poster" class="img-fluid shadow rounded-4" />
+            </div>
+            <div class="col-md-8">
+                <h4 class="fw-bold">@Model.MovieTitle</h4>
+                <p><strong>Theatre:</strong> @Model.TheatreName</p>
+                <p><strong>Hall:</strong> @Model.HallName</p>
+                <p><strong>Date:</strong> @Model.ShowDate</p>
+                <p><strong>Time:</strong> @Model.ShowTime</p>
+                <p><strong>Selected Seats:</strong> @string.Join(", ", Model.SelectedSeatNumbers)</p>
+                <p><strong>Total Price:</strong> $@Model.TotalPrice</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Details -->
+    <div class="card shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold">👤 User Details</h5>
+        <p><strong>Name:</strong> @Model.FirstName @Model.LastName</p>
+        <p><strong>Phone Number:</strong> @Model.PhoneNumber</p>
+        <p><strong>Email:</strong> @Model.UserEmail</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="text-center mt-4">
+        <form action="/Stripe/Checkout" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ShowTimeId" value="@Model.ShowTimeId" />
+            <input type="hidden" name="SeatNumbers" value="@string.Join(",", Model.SelectedSeatNumbers)" />
+            <input type="hidden" name="TotalPrice" value="@Model.TotalPrice" />
+            <button type="submit" class="btn btn-lg btn-success px-5">Proceed to Payment</button>
+        </form>
+        <a href="/" class="btn btn-lg btn-secondary px-5">Cancel ❌</a>
+    </div>
+</div>
+ *@

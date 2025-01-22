@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using static System.Collections.Specialized.BitVector32;
 
@@ -148,6 +149,111 @@ namespace CinemaTicketingSystem.Web.Controllers
             };
 
             // Return the view with the model
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ConfirmCheckout([FromBody] ConfirmCheckoutVM model)
+        {
+            try
+            {
+                // Validate input
+                if (model == null || model.SelectedSeatIds == null || !model.SelectedSeatIds.Any())
+                {
+                    return BadRequest(new { message = "Invalid input. Please select at least one seat." });
+                }
+
+                // Get the current user from Identity
+                var userName = User.Identity.Name; // Assumes Identity uses Username as User.Identity.Name
+                var user = await _userManager.FindByNameAsync(userName);
+                if (string.IsNullOrEmpty(userName))
+                {
+                    return Unauthorized(new { message = "User not authenticated." });
+                }
+
+                // Get current time
+                var now = DateTime.Now;
+
+                // Check if any selected seat is already reserved
+                var reservedSeats = _unitOfWork.TemporarySeatReservations.GetAll(r =>
+                    r.ShowTimeId == model.ShowTimeId &&
+                    model.SelectedSeatIds.Contains(r.SeatId) &&
+                    r.ReservedAt > now.AddMinutes(-5));
+
+                if (reservedSeats.Any())
+                {
+                    return Conflict(new { message = "Some selected seats are already reserved." });
+                }
+
+                // Temporarily reserve the seats
+                foreach (var seatId in model.SelectedSeatIds)
+                {
+                    var reservation = new TemporarySeatReservation
+                    {
+                        ShowTimeId = model.ShowTimeId,
+                        SeatId = seatId,
+                        UserId = user.Id,
+                        ReservedAt = now,
+                        IsConfirmed = false
+                    };
+
+                    _unitOfWork.TemporarySeatReservations.Add(reservation);
+                }
+
+                // Save changes
+                _unitOfWork.Save();
+
+                // Return success response
+                return Ok(new { success = true, message = "Seats reserved successfully." });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if required
+                Console.WriteLine($"Error: {ex.Message}");
+                return StatusCode(500, new { message = "An error occurred while reserving seats. Please try again." });
+            }
+        }
+
+        public async Task<IActionResult> CheckoutConfirmation(int showTimeId, string selectedSeats)
+        {
+            var userName = User.Identity.Name; // Fetch authenticated user
+            var user = await _userManager.FindByNameAsync(userName);
+            var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("User not authenticated.");
+            }
+
+            var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
+            var movie = _unitOfWork.Movies.Get(x => x.MovieId == showTime.MovieId);
+            var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == showTime.TheatreId);
+            var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
+
+            var seatNumbers = _unitOfWork.Seats.GetAll(x => seatIds.Contains(x.SeatId))
+                .Select(s => $"{s.SectionName} {s.SeatNumber}")
+                .ToList();
+
+            var totalPrice = showTime.Price * seatIds.Count;
+
+            var model = new CheckoutConfirmationVM
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber,
+                UserEmail = user.Email, 
+                ShowTimeId = showTimeId,
+                MovieTitle = movie.Title,
+                PosterUrl = movie.Poster,
+                TheatreName = theatre.TheatreName,
+                Genre = movie.Genre,
+                Duration = movie.Duration,
+                HallName = hall.HallName,
+                ShowDate = showTime.ShowDate.ToString("MMMM dd, yyyy"),
+                ShowTime = $"{showTime.ShowTimeStart} - {showTime.ShowTimeEnd}",
+                SelectedSeatNumbers = seatNumbers,
+                TotalPrice = totalPrice
+            };
+
             return View(model);
         }
 

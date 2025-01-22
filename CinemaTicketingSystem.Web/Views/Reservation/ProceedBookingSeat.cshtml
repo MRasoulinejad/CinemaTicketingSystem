@@ -4,6 +4,7 @@
     Layout = "_Layout";
     ViewData["Title"] = "Seat Selection";
 }
+@Html.AntiForgeryToken()
 
 <div class="container py-4">
     <h2 class="text-center mb-4 fw-bold text-primary">🎟️ Seat Selection</h2>
@@ -116,7 +117,7 @@
                 },
                 body: JSON.stringify({
                     showTimeId: @Model.ShowTimeId,
-                    seatIds: selectedSeats
+                    SelectedSeatIds: selectedSeats
                 })
             })
             .then(response => {
@@ -125,8 +126,16 @@
             })
             .then(data => {
                 if (data.success) {
-                    alert("Seats confirmed successfully!");
-                    window.location.href = "/Reservation/CompleteBooking";
+                    // alert("Seats confirmed successfully!");
+                    // window.location.href = "/Reservation/CheckoutConfirmation";
+            // Construct query parameters for redirection
+            const queryParams = new URLSearchParams({
+                showTimeId: @Model.ShowTimeId,
+                selectedSeats: selectedSeats.join(",")
+            });
+
+            // Redirect to the CheckoutConfirmation page with parameters
+            window.location.href = `/Reservation/CheckoutConfirmation?${queryParams.toString()}`;
                 } else {
                     alert(data.message || "Failed to confirm seats. Try again.");
                 }
