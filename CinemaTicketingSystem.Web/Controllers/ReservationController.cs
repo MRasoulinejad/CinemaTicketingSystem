@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Stripe;
+using Stripe.Checkout;
 using System.Security.Claims;
 using static System.Collections.Specialized.BitVector32;
 
@@ -72,7 +74,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return Json(showTimes);
         }
 
-        
+
         public IActionResult BookShowTime(int showTimeId)
         {
             var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
@@ -216,7 +218,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         public async Task<IActionResult> CheckoutConfirmation(int showTimeId, string selectedSeats)
         {
-            
+
             var userName = User.Identity.Name; // Fetch authenticated user
             if (string.IsNullOrEmpty(userName))
             {
@@ -271,13 +273,153 @@ namespace CinemaTicketingSystem.Web.Controllers
                 ShowTime = $"{showTime.ShowTimeStart} - {showTime.ShowTimeEnd}",
                 SelectedSeatNumbers = seatNumbers,
                 TotalPrice = totalPrice,
-                ReservedAt = reservedAt // Pass the reservation time to the view
+                ReservedAt = reservedAt, // Pass the reservation time to the view
+                SelectedSeatIds = seatIds,
             };
 
             return View(model);
         }
 
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> FinalizeBooking([FromBody] FinalizeBookingRequestVM model)
+        {
+            try
+            {
+                //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Get the authenticated user's ID
 
+                //    if (userId == null || !model.SelectedSeatIds.Any())
+                //    {
+                //        return BadRequest("Invalid booking request.");
+                //    }
+
+                //    // Calculate total price based on ShowTime and number of seats
+                //    var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == model.ShowTimeId);
+                //    if (showTime == null)
+                //    {
+                //        return NotFound("ShowTime not found.");
+                //    }
+
+                //    //////////
+                //    ///
+                //    ///
+
+                //    var totalPrice = model.SelectedSeatIds.Count * showTime.Price;
+
+                //    // Create reservations in the database
+                //    foreach (var seatId in model.SelectedSeatIds)
+                //    {
+                //        var reservation = new Reservation
+                //        {
+                //            ShowTimeId = model.ShowTimeId,
+                //            SeatId = seatId,
+                //            UserId = userId,
+                //            ReservationDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                //            Status = "Pending", // Status can be updated after payment confirmation
+                //            PaymentStatus = "Pending"
+                //        };
+
+                //        _unitOfWork.Reservations.Add(reservation);
+                //    }
+
+                //    _unitOfWork.Save(); // Save reservations to the database
+
+                //    // Initialize Stripe Payment Session
+                //    var domain = $"{Request.Scheme}://{Request.Host}";
+                //    var options = new SessionCreateOptions
+                //    {
+                //        PaymentMethodTypes = new List<string> { "card" },
+                //        LineItems = new List<SessionLineItemOptions>
+                //{
+                //    new SessionLineItemOptions
+                //    {
+                //        PriceData = new SessionLineItemPriceDataOptions
+                //        {
+                //            Currency = "cad", // Set currency to Canadian Dollar
+                //            UnitAmount = (long)(totalPrice * 100), // Amount in cents
+                //            ProductData = new SessionLineItemPriceDataProductDataOptions
+                //            {
+                //                Name = $"{showTime.Movie.Title} - Reservation",
+                //                Description = $"Seats: {string.Join(", ", model.SelectedSeatIds)}"
+                //            },
+                //        },
+                //        Quantity = 1,
+                //    },
+                //},
+                //        Mode = "payment",
+                //        SuccessUrl = $"{domain}/Reservation/Success?sessionId={{CHECKOUT_SESSION_ID}}",
+                //        CancelUrl = $"{domain}/Reservation/Cancel",
+                //    };
+
+
+                var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == model.ShowTimeId, includeProperties: "Movie");
+                if (showTime == null || showTime.Movie == null)
+                {
+                    throw new Exception("ShowTime or Movie data is missing.");
+                }
+
+                var totalPrice = showTime.Price * model.SelectedSeatIds.Count;
+                if (totalPrice <= 0)
+                {
+                    throw new Exception("Invalid total price calculation.");
+                }
+
+                if (model.SelectedSeatIds == null || !model.SelectedSeatIds.Any())
+                {
+                    throw new Exception("SelectedSeatIds is null or empty.");
+                }
+
+                var domain = $"{Request.Scheme}://{Request.Host}"; // Replace with your actual domain
+                if (string.IsNullOrEmpty(domain))
+                {
+                    throw new Exception("Domain is not set.");
+                }
+
+                var options = new SessionCreateOptions
+                {
+                    PaymentMethodTypes = new List<string> { "card" },
+                    LineItems = new List<SessionLineItemOptions>
+    {
+        new SessionLineItemOptions
+        {
+            PriceData = new SessionLineItemPriceDataOptions
+            {
+                Currency = "cad", // Set currency to Canadian Dollar
+                UnitAmount = (long)(totalPrice * 100), // Amount in cents
+                ProductData = new SessionLineItemPriceDataProductDataOptions
+                {
+                    Name = $"{showTime.Movie.Title} - Reservation",
+                    Description = $"Seats: {string.Join(", ", model.SelectedSeatIds)}"
+                },
+            },
+            Quantity = 1,
+        },
+    },
+                    Mode = "payment",
+                    SuccessUrl = $"{domain}/Reservation/Success?sessionId={{CHECKOUT_SESSION_ID}}",
+                    CancelUrl = $"{domain}/Reservation/Cancel",
+                };
+
+
+
+                var service = new SessionService();
+                var session = await service.CreateAsync(options);
+
+                // Redirect to Stripe payment page
+                return Json(new { success = true, redirectUrl = session.Url });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging purposes
+                Console.WriteLine($"Error in FinalizeBooking: {ex.Message}");
+                return StatusCode(500, "An error occurred while finalizing the booking.");
+            }
+        }
+
+        public IActionResult BookingSuccessfull()
+        {
+            return View();
+        }
 
 
     }

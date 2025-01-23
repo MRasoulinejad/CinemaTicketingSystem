@@ -4,7 +4,7 @@
     Layout = "_Layout";
     ViewData["Title"] = "Checkout Confirmation";
 }
-
+@Html.AntiForgeryToken()
 <div class="container py-4">
     <h2 class="text-center mb-4 fw-bold text-primary">🎟️ Checkout Confirmation</h2>
 
@@ -49,17 +49,26 @@
         </div>
     </div>
 
-    <!-- Action Buttons -->
+@*     <!-- Action Buttons -->
     <div class="text-center mt-5">
-        <form action="/Stripe/Checkout" method="post" class="d-inline-block">
+        <form asp-controller="Reservation" asp-action="FinalizeBooking" method="post" class="d-inline-block">
             @Html.AntiForgeryToken()
             <input type="hidden" name="ShowTimeId" value="@Model.ShowTimeId" />
-            <input type="hidden" name="SeatNumbers" value="@string.Join(",", Model.SelectedSeatNumbers)" />
+            <input type="hidden" name="selectedSeatIds" value="@string.Join(",", Model.SelectedSeatNumbers)" />
             <input type="hidden" name="TotalPrice" value="@Model.TotalPrice" />
             <button type="submit" id="proceedButton" class="btn btn-lg btn-success px-5">Proceed to Payment 💳</button>
         </form>
         <a href="/" class="btn btn-lg btn-secondary px-5 ms-3">Cancel ❌</a>
+    </div> *@
+
+
+    <!-- Action Buttons -->
+    <div class="text-center mt-5">
+        <button id="proceedButton" class="btn btn-lg btn-success px-5">Proceed to Payment 💳</button>
+        <a href="/" class="btn btn-lg btn-secondary px-5 ms-3">Cancel ❌</a>
     </div>
+
+
 
 </div>
 
@@ -96,5 +105,44 @@
         }
 
         const timerInterval = setInterval(updateCountdown, 1000);
+
+        //
+        document.getElementById("proceedButton").addEventListener("click", function () {
+            const showTimeId = @Model.ShowTimeId;
+            const selectedSeatIds = @Html.Raw(Json.Serialize(Model.SelectedSeatIds ?? new List<int>()));
+
+            // Sending data to the server using Fetch API
+            fetch('/Reservation/FinalizeBooking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    showTimeId: showTimeId,
+                    selectedSeatIds: selectedSeatIds
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to process payment.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert("Redirecting to payment...");
+                    window.location.href = data.redirectUrl; // Redirect to payment page
+                } else {
+                    alert(data.message || "Something went wrong. Try again.");
+                }
+            })
+            .catch(error => {
+                console.error("Error during payment initialization:", error);
+                alert("An error occurred. Please try again.");
+            });
+        });
+
+
     </script>
 }

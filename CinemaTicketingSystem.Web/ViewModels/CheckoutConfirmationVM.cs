@@ -18,5 +18,6 @@
         public List<String> SelectedSeatNumbers { get; set; } // Add seat numbers for display
         public decimal TotalPrice { get; set; }
         public DateTime ReservedAt { get; set; }
+        public List<int> SelectedSeatIds { get; set; }
     }
 }
