@@ -56,10 +56,45 @@
             <input type="hidden" name="ShowTimeId" value="@Model.ShowTimeId" />
             <input type="hidden" name="SeatNumbers" value="@string.Join(",", Model.SelectedSeatNumbers)" />
             <input type="hidden" name="TotalPrice" value="@Model.TotalPrice" />
-            <button type="submit" class="btn btn-lg btn-success px-5">Proceed to Payment 💳</button>
+            <button type="submit" id="proceedButton" class="btn btn-lg btn-success px-5">Proceed to Payment 💳</button>
         </form>
         <a href="/" class="btn btn-lg btn-secondary px-5 ms-3">Cancel ❌</a>
     </div>
 
 </div>
 
+
+
+<div class="sticky-timer">
+    <p>
+        You have <span id="countdown-timer">5:00</span> minutes to complete your reservation.
+    </p>
+</div>
+
+@section Scripts {
+    <script>
+        // ReservedAt from the backend
+        const reservedAt = new Date('@Model.ReservedAt.ToString("yyyy-MM-ddTHH:mm:ss")');
+        const countdownTimer = document.getElementById('countdown-timer');
+        const expirationTime = new Date(reservedAt.getTime() + 5 * 60000); // Add 5 minutes to reservedAt
+
+        function updateCountdown() {
+            const now = new Date();
+            const remaining = expirationTime - now;
+
+            if (remaining <= 0) {
+                countdownTimer.textContent = "Time expired!";
+                document.getElementById("proceedButton").disabled = true;
+                clearInterval(timerInterval);
+                //alert("Your reservation has expired. Please try again.");
+                return;
+            }
+
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            countdownTimer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        const timerInterval = setInterval(updateCountdown, 1000);
+    </script>
+}

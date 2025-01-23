@@ -216,15 +216,22 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         public async Task<IActionResult> CheckoutConfirmation(int showTimeId, string selectedSeats)
         {
+            
             var userName = User.Identity.Name; // Fetch authenticated user
-            var user = await _userManager.FindByNameAsync(userName);
-            var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
             if (string.IsNullOrEmpty(userName))
             {
                 return Unauthorized("User not authenticated.");
             }
 
+            var user = await _userManager.FindByNameAsync(userName);
+            var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
+
             var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
+            if (showTime == null)
+            {
+                return NotFound("ShowTime not found.");
+            }
+
             var movie = _unitOfWork.Movies.Get(x => x.MovieId == showTime.MovieId);
             var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == showTime.TheatreId);
             var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
@@ -235,12 +242,24 @@ namespace CinemaTicketingSystem.Web.Controllers
 
             var totalPrice = showTime.Price * seatIds.Count;
 
+            // Fetch the earliest reservation time for the selected seats
+            var reservedAt = _unitOfWork.TemporarySeatReservations
+                .GetAll(r => r.UserId == user.Id && seatIds.Contains(r.SeatId) && r.ShowTimeId == showTimeId)
+                .OrderBy(r => r.ReservedAt)
+                .Select(r => r.ReservedAt)
+                .FirstOrDefault();
+
+            if (reservedAt == default)
+            {
+                return BadRequest("Reservation not found or expired.");
+            }
+
             var model = new CheckoutConfirmationVM
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
-                UserEmail = user.Email, 
+                UserEmail = user.Email,
                 ShowTimeId = showTimeId,
                 MovieTitle = movie.Title,
                 PosterUrl = movie.Poster,
@@ -251,7 +270,8 @@ namespace CinemaTicketingSystem.Web.Controllers
                 ShowDate = showTime.ShowDate.ToString("MMMM dd, yyyy"),
                 ShowTime = $"{showTime.ShowTimeStart} - {showTime.ShowTimeEnd}",
                 SelectedSeatNumbers = seatNumbers,
-                TotalPrice = totalPrice
+                TotalPrice = totalPrice,
+                ReservedAt = reservedAt // Pass the reservation time to the view
             };
 
             return View(model);
