@@ -374,41 +374,42 @@ namespace CinemaTicketingSystem.Web.Controllers
                         .Select(int.Parse)
                         .ToList();
 
-                    // Update the reservation status to confirmed
+                    // Get the current user ID from Identity or session data
+                    var userName = User.Identity?.Name;
+                    var user = await _userManager.FindByNameAsync(userName);
+                    var userId = user?.Id ?? session.CustomerEmail; // Fallback to customer email if user not found
+
+                    // Add entries to the Reservation table
                     foreach (var seatId in selectedSeatIds)
                     {
-                        var tempReservation = _unitOfWork.TemporarySeatReservations
-                            .Get(r => r.ShowTimeId == showTimeId && r.SeatId == seatId && !r.IsConfirmed);
-
-                        if (tempReservation != null)
-                        {
-                            tempReservation.IsConfirmed = true;
-                            _unitOfWork.TemporarySeatReservations.Update(tempReservation);
-                        }
-
-                        // Update seat status to permanently reserved
-                        var seat = _unitOfWork.Seats.Get(s => s.SeatId == seatId);
-                        if (seat != null)
-                        {
-                            seat.IsReserved = true;
-                            _unitOfWork.Seats.Update(seat);
-                        }
-
-                        // Add entry to the Reservation table
                         var reservation = new Reservation
                         {
                             ShowTimeId = showTimeId,
                             SeatId = seatId,
                             ReservationDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                            Status = "Confirmed",
-                            PaymentStatus = "Paid",
-                            UserId = session.CustomerEmail // Example of mapping email to user ID
+                            Status = "Confirmed", // Reservation status
+                            PaymentStatus = "Paid", // Payment status
+                            UserId = userId
                         };
-                        _unitOfWork.Reservations.Add(reservation);
-                    }
 
-                    // Save all changes
-                    _unitOfWork.Save();
+                        _unitOfWork.Reservations.Add(reservation);
+                        _unitOfWork.Save();
+
+                        // Add an entry to the Payment table
+                        var totalPrice = session.AmountTotal / 100.0; // Convert cents to dollars
+                        var payment = new Payment
+                        {
+                            ReservationId = reservation.ReservationId, 
+                            Amount = (decimal)totalPrice,
+                            PaymentDate = reservation.ReservationDate,
+                            PaymentStatus = "Paid",
+                            StripeSessionId = sessionId,
+                            StripePaymentIntentId = session.PaymentIntentId
+                        };
+
+                        _unitOfWork.Payments.Add(payment);
+                        _unitOfWork.Save();
+                    }
 
                     // Redirect to a success page
                     return RedirectToAction("SuccessPage");

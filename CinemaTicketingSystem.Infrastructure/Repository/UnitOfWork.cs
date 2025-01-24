@@ -26,6 +26,8 @@ namespace CinemaTicketingSystem.Infrastructure.Repository
 
         public IReservationRepository Reservations { get; private set; }
 
+        public IPaymentRepository Payments { get; private set; }
+
 
         public UnitOfWork(ApplicationDbContext db)
         {
@@ -37,6 +39,7 @@ namespace CinemaTicketingSystem.Infrastructure.Repository
             ShowTimes = new ShowTimeRepository(_db);
             TemporarySeatReservations = new TemporarySeatReservationRepository(_db);
             Reservations = new ReservationRepository(_db);
+            Payments = new PaymentRepository(_db);
         }
 
         public void Save()

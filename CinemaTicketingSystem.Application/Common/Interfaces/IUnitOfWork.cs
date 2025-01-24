@@ -15,6 +15,7 @@ namespace CinemaTicketingSystem.Application.Common.Interfaces
         IShowtimeRepository ShowTimes { get; }
         ITemporarySeatReservationRepository TemporarySeatReservations { get; }
         IReservationRepository Reservations { get; }
+        IPaymentRepository Payments { get; }
         void Save();
     }
 }
