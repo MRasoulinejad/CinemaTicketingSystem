@@ -1,0 +1,40 @@
+﻿@model List<TicketVM>
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Booking Success";
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-success">🎉 Booking Confirmed!</h2>
+    <p class="text-center mb-5 text-muted">Thank you for your booking! Below are your tickets:</p>
+
+    <!-- Ticket Cards -->
+    <div class="d-flex flex-wrap justify-content-center gap-4">
+        @foreach (var ticket in Model)
+        {
+            <div class="ticket-card position-relative">
+                <!-- Ticket Content -->
+                <div class="ticket-content">
+                    <h4 class="ticket-title fw-bold">@ticket.MovieTitle</h4>
+                    <p><strong>Theatre:</strong> @ticket.TheatreName</p>
+                    <p><strong>Hall:</strong> @ticket.HallName</p>
+                    <p><strong>Seat:</strong> @ticket.SeatNumber</p>
+                    <p><strong>Date:</strong> @ticket.ShowDate</p>
+                    <p><strong>Time:</strong> @ticket.ShowTime</p>
+                    <p class="ticket-price text-warning fw-bold"><strong>Price:</strong> $@ticket.Price</p>
+                </div>
+
+                <!-- Ticket ID (Vertical) -->
+                <div class="ticket-id">
+                    <p>@ticket.TicketId</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Return to Homepage Button -->
+    <div class="text-center mt-5">
+        <a href="/" class="btn btn-lg btn-secondary px-5">Return to Homepage 🏠</a>
+    </div>
+</div>

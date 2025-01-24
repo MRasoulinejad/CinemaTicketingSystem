@@ -255,3 +255,66 @@ body {
         margin: 0;
         font-size: 18px; /* Optional: adjust font size of the label */
     }
+
+
+/*Ticket*/
+
+/* Ticket Card */
+.ticket-card {
+    display: flex;
+    background-image: url('/images/ticket-bg.jpg'); /* Background image for the ticket */
+    background-size: cover;
+    background-position: center;
+    width: 600px;
+    height: 300px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    position: relative;
+    margin: 10px;
+}
+
+/* Ticket Content */
+.ticket-content {
+    padding: 20px;
+    width: 75%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #fff;
+}
+
+/* Ticket Title */
+.ticket-title {
+    font-size: 1.1rem;
+    color: #ffa500;
+    margin-bottom: 10px;
+}
+
+/* Price */
+.ticket-price {
+    font-size: 1.1rem;
+    color: #3fc983; /* Gold color */
+}
+
+/* Ticket ID Section (Vertical) */
+.ticket-id {
+    width: 30%;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-left: 2px solid #fff;
+    writing-mode: vertical-rl; /* Display text vertically */
+    transform: rotate(180deg); /* Rotate for correct vertical display */
+    font-size: 2rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #ffd700; /* Gold color for Ticket ID */
+}
+
+/* Card Spacing */
+.d-flex.gap-4 > .ticket-card {
+    margin: 10px 0;
+}
