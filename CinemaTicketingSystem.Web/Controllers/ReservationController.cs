@@ -116,6 +116,10 @@ namespace CinemaTicketingSystem.Web.Controllers
             var temporaryReservations = _unitOfWork.TemporarySeatReservations.GetAll(r =>
                 r.ShowTimeId == showTimeId && r.ReservedAt > now.AddMinutes(-5)).ToList();
 
+            // Fetch all confirmed and paid reservations for the given ShowTime
+            var confirmedReservations = _unitOfWork.Reservations.GetAll(r =>
+                r.ShowTimeId == showTimeId && r.Status == "Confirmed" && r.PaymentStatus == "Paid").Select(r => r.SeatId).ToHashSet();
+
             // Fetch and group seats by sections
             var sectionInfo = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
                 .GroupBy(s => s.SectionName)
@@ -125,14 +129,14 @@ namespace CinemaTicketingSystem.Web.Controllers
                     SectionCount = group.Count()
                 }).ToList();
 
-            // Fetch seat data, including temporary reservation status
+            // Fetch seat data, including temporary and confirmed reservation statuses
             var seats = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
                 .Select(s => new SeatVM
                 {
                     SeatId = s.SeatId,
                     SectionName = s.SectionName,
                     SeatNumber = s.SeatNumber,
-                    IsReserved = s.IsReserved,
+                    IsReserved = confirmedReservations.Contains(s.SeatId), // Check against confirmed reservations
                     IsTemporaryReserved = temporaryReservations.Any(r => r.SeatId == s.SeatId) // Check against temporary reservations
                 }).ToList();
 
@@ -428,7 +432,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
         }
 
-
+        
 
     }
 }
