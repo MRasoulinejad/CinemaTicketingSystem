@@ -6,6 +6,11 @@ body {
     background-color: #f8f9fa;
 }
 
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
 /* Navbar Styling */
 .navbar {
     background-color: #1e1e2f !important;
@@ -46,12 +51,6 @@ body {
 }
 
 
-
-
-
-    
-
-
 .card-img-top {
     height: 250px;
     object-fit: cover;
@@ -76,6 +75,8 @@ body {
         .footer a:hover {
             text-decoration: underline;
         }
+
+
 
 /* Button Enhancements */
 .btn-cinema {

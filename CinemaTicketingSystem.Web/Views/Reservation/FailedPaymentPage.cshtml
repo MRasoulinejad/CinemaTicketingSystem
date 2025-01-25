@@ -1,0 +1,26 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Payment Failed";
+}
+
+<div class="container py-5 d-flex flex-column align-items-center">
+    <!-- Error Icon -->
+    <div class="mb-4">
+        <i class="bi bi-x-circle-fill text-danger" style="font-size: 5rem;"></i>
+    </div>
+
+    <!-- Main Title -->
+    <h2 class="text-danger fw-bold mb-3">Payment Failed</h2>
+
+    <!-- Description -->
+    <p class="text-muted text-center mb-4">
+        Unfortunately, your payment could not be processed. <br />
+        Your selected seats have been released. Please try again or choose another option.
+    </p>
+
+    <!-- Buttons -->
+    <div class="d-flex justify-content-center gap-3">
+        <a href="/Reservation/CreateReservation" class="btn btn-primary btn-lg px-5">Retry Booking</a>
+        <a href="/" class="btn btn-outline-secondary btn-lg px-5">Go to Homepage</a>
+    </div>
+</div>

@@ -1,5 +1,12 @@
 ﻿/* 🎯 Admin Dashboard Styles */
 
+#wrapper {
+    display: flex;
+    height: 100vh; /* Full height of the viewport */
+    overflow: hidden; /* Prevent extra space or scrolling */
+}
+
+
 /* Sidebar */
 #sidebar-wrapper {
     min-width: 250px;

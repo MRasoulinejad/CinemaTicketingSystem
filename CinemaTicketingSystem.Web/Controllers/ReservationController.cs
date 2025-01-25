@@ -480,7 +480,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                     // Save all changes
                     _unitOfWork.Save();
 
-                    // Add entry to the Payment table
+                    // Add failed payment data to the Payment table
                     var payment = new Payment
                     {
                         ReservationId = reservation.ReservationId,
@@ -527,7 +527,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                 TempData["error"] = "An unexpected error occurred. Please try again.";
 
                 // Redirect to the home page or another fallback page
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("FailedPaymentPage", "Reservation");
             }
         }
 
@@ -566,6 +566,13 @@ namespace CinemaTicketingSystem.Web.Controllers
                 return RedirectToAction("ErrorPage", new { message = "Error fetching tickets." });
             }
         }
+
+        [HttpGet]
+        public IActionResult FailedPaymentPage()
+        {
+            return View();
+        }
+
 
     }
 }
