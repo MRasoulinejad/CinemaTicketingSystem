@@ -574,5 +574,7 @@ namespace CinemaTicketingSystem.Web.Controllers
         }
 
 
+
+
     }
 }

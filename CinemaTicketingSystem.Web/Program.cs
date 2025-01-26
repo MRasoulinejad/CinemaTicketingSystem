@@ -2,6 +2,7 @@ using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Infrastructure.Repository;
+using CinemaTicketingSystem.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
@@ -14,13 +15,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+// Register the repository
+builder.Services.AddScoped<ITemporaryReservationRepository, TemporaryReservationRepository>();
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddHttpClient();
 
-
+// Register the background service
+builder.Services.AddHostedService<TemporarySeatReservationCleanupService>();
 
 var app = builder.Build();
 
