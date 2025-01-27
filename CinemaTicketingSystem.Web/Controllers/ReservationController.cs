@@ -178,7 +178,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                 }
 
                 // Get current time
-                var now = DateTime.Now;
+                var now = DateTime.UtcNow;
 
                 // Check if any selected seat is already reserved
                 var reservedSeats = _unitOfWork.TemporarySeatReservations.GetAll(r =>
