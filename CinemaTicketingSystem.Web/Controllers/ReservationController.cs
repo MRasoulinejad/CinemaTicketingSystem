@@ -1,4 +1,5 @@
 ﻿using CinemaTicketingSystem.Application.Common.Interfaces;
+using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Web.ViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -23,6 +24,134 @@ namespace CinemaTicketingSystem.Web.Controllers
             _unitOfWork = unitOfWork;
             _userManager = userManager;
         }
+
+        [HttpGet]
+        public IActionResult ManageReservation() => View();
+
+        public async Task<IActionResult> SearchReservationByShowTime(string query, string filterBy)
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(filterBy))
+            {
+                return BadRequest(new { message = "Query and filterBy are required." });
+            }
+
+            List<int> relevantIds = new List<int>();
+
+            // Filter based on the criteria
+            switch (filterBy.ToLower())
+            {
+                case "movie":
+                    // Fetch relevant MovieIds
+                    relevantIds = _unitOfWork.Movies
+                        .GetAll()
+                        .Where(m => m.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
+                        .Select(m => m.MovieId)
+                        .ToList();
+                    break;
+
+                case "theatre":
+                    // Fetch relevant TheatreIds
+                    relevantIds = _unitOfWork.Theatres
+                        .GetAll()
+                        .Where(t => t.TheatreName.Contains(query, StringComparison.OrdinalIgnoreCase))
+                        .Select(t => t.TheatreId)
+                        .ToList();
+                    break;
+
+                default:
+                    return BadRequest(new { message = "Invalid filterBy value. Use 'movie' or 'theatre'." });
+            }
+
+            // Fetch ShowTimes based on the filtered IDs
+            var showTimes = filterBy.ToLower() == "movie"
+                ? _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.MovieId))
+                : _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.TheatreId));
+
+
+            // Project the result
+            var result = showTimes.Select(s => new
+            {
+                s.ShowTimeId,
+                ShowDate = s.ShowDate.ToShortDateString(),
+                StartTime = s.ShowTimeStart.ToString(@"hh\:mm"),
+                EndTime = s.ShowTimeEnd.ToString(@"hh\:mm"),
+                Theatre = _unitOfWork.Theatres.GetAll().FirstOrDefault(t => t.TheatreId == s.TheatreId)?.TheatreName ?? "N/A",
+                Hall = _unitOfWork.Halls.GetAll().FirstOrDefault(h => h.HallId == s.HallId)?.HallName ?? "N/A",
+                Movie = _unitOfWork.Movies.GetAll().FirstOrDefault(t => t.MovieId == s.MovieId)?.Title ?? "N/A",
+                Price = s.Price,
+                TotalSeats = _unitOfWork.Seats.GetAll().Count(seat => seat.HallId == s.HallId),
+                ReservedSeats = _unitOfWork.Reservations.GetAll().Count(r => r.ShowTimeId == s.ShowTimeId && r.PaymentStatus == SD.PaymentStatus_Paid)
+            }).ToList();
+
+
+            return Json(result);
+        }
+
+        public async Task<IActionResult> SearchReservationByUserOrTicket(string query, string filterBy)
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(filterBy))
+            {
+                return BadRequest(new { message = "Query and filterBy are required." });
+            }
+
+            ApplicationUser user = null;
+            int ticketId = 0;
+
+            switch (filterBy.ToLower())
+            {
+                case "user":
+                    // Fetch reservations by user
+                    user = _userManager.Users.FirstOrDefault(u => u.Email == query.ToLower());
+                    if (user == null)
+                    {
+                        return NotFound(new { message = "User not found." });
+                    }
+                    break;
+
+                case "ticket":
+                    // Fetch reservations by ticket ID
+                    var reservation = _unitOfWork.Reservations.Get(r => r.ReservationId == int.Parse(query));
+                    if (reservation == null)
+                    {
+                        return NotFound(new { message = "Ticket not found." });
+                    }
+                    ticketId = reservation.ReservationId;
+                    user = _userManager.Users.FirstOrDefault(u => u.Id == reservation.UserId);
+                    break;
+
+                default:
+                    return BadRequest(new { message = "Invalid query value. Use 'user' or 'ticket'." });
+            }
+
+            // Fetch reservations based on the user or ticket ID
+            var reservations = filterBy.ToLower() == "user"
+                ? _unitOfWork.Reservations.GetAll(r => r.UserId == user.Id, 
+                includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat")
+                : _unitOfWork.Reservations.GetAll(r => r.ReservationId == ticketId,
+                includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat");
+
+            // Project the result
+            var result = reservations
+                .OrderByDescending(r => r.ReservationId)
+                .Select(r => new
+            {
+                TicketNumber = r.ReservationId,
+                UserEmail = user.Email,
+                Movie = r.ShowTime.Movie.Title,
+                Theatre = r.ShowTime.Theatre.TheatreName,
+                Hall = _unitOfWork.Halls.Get(h => h.HallId == r.ShowTime.HallId).HallName,
+                ShowDate = r.ShowTime.ShowDate.ToShortDateString(),
+                SeatNumber = $"{r.Seat.SectionName} {r.Seat.SeatNumber}",
+                Status = r.Status,
+                PaymentStatus = r.PaymentStatus                
+            }).ToList();
+
+            return Json(result);
+        }
+
+
 
         [HttpGet]
         public IActionResult CreateReservation(int? movieId, int? theatreId)

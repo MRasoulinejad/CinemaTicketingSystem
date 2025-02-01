@@ -1,0 +1,189 @@
+﻿@{
+    Layout = "_AdminLayout"; // Use the admin panel layout
+    ViewData["Title"] = "Manage Reservations";
+}
+
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-primary">🎟️ Manage Reservations</h2>
+
+@*     <!-- Search ShowTimes -->
+    <div class="card shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold text-secondary">🔍 Search ShowTimes</h5>
+        <form id="searchShowTimeForm" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" id="movieName" class="form-control" placeholder="Enter Movie Name" />
+            </div>
+            <div class="col-md-4">
+                <input type="text" id="theatreName" class="form-control" placeholder="Enter Theatre Name" />
+            </div>
+            <div class="col-md-4">
+                <input type="date" id="showDate" class="form-control" />
+            </div>
+            <div class="col-md-12 text-center">
+                <button type="button" id="searchShowTimeButton" class="btn btn-primary px-4">Search</button>
+            </div>
+        </form>
+    </div> *@
+
+    <!-- Search Section -->
+    <div class="card shadow-sm rounded-4 mb-4 p-4">
+        <h4 class="fw-bold">🔍 Search Show Times</h4>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <select id="searchType" class="form-select">
+                    <option value="movie">Search by Movie</option>
+                    <option value="theatre">Search by Theatre</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" id="searchQuery" class="form-control" placeholder="Enter your search term..." />
+            </div>
+            <div class="col-md-4 text-center">
+                <button class="btn btn-primary px-4" onclick="searchShowTimes()">🔍 Search</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Search Reservations by User Email -->
+    <div class="card shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold text-secondary">📧 Search Reservations by User Email or Ticket Number</h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <select id="searchTypeTwo" class="form-select">
+                    <option value="ticket">Search by Ticket Number</option>
+                    <option value="user">Search by Email</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" id="searchQueryTwo" class="form-control" placeholder="Enter your search term..." />
+            </div>
+            <div class="col-md-4 text-center">
+                <button class="btn btn-primary px-4" onclick="searchReservation()">🔍 Search</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Results Section -->
+    <div id="searchResults">
+        <div class="card shadow-sm rounded-4 p-4 mb-4" id="showtimeResults" style="display: none;">
+            <h5 class="fw-bold text-secondary">🎬 ShowTime Results</h5>
+            <table class="table table-bordered text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Movie</th>
+                        <th>Theatre</th>
+                        <th>Hall</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Total Seats</th>
+                        <th>Reserved Seats</th>
+                    </tr>
+                </thead>
+                <tbody id="showtimeTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="card shadow-sm rounded-4 p-4 mb-4" id="reservationResults" style="display: none;">
+            <h5 class="fw-bold text-secondary">📋 Reservation Results</h5>
+            <table class="table table-bordered text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Ticket Number</th>
+                        <th>User Email</th>
+                        <th>Movie</th>
+                        <th>Theatre</th>
+                        <th>Hall</th>
+                        <th>Date</th>
+                        <th>Seat</th>
+                        <th>Status</th>
+                        <th>Payment Status</th>
+                    </tr>
+                </thead>
+                <tbody id="reservationTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+             function searchShowTimes() {
+            const searchType = document.getElementById('searchType').value;
+            const searchQuery = document.getElementById('searchQuery').value.trim();
+
+            if (!searchQuery) {
+                //alert("Please enter a search term.");
+                return;
+            }
+
+            fetch(`/Reservation/SearchReservationByShowTime?filterBy=${searchType}&query=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById("showtimeTableBody");
+                    tableBody.innerHTML = "";
+
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="6" class="text-muted">No results found.</td></tr>';
+                    } else {
+                        data.forEach(showtime => {
+                            tableBody.innerHTML += `
+                                <tr>
+                                    <td>${showtime.movie}</td>
+                                    <td>${showtime.theatre}</td>
+                                    <td>${showtime.hall}</td>
+                                    <td>${showtime.showDate}</td>
+                                    <td>${showtime.startTime} - ${showtime.endTime}</td>
+                                    <td>${showtime.totalSeats}</td>
+                                    <td>${showtime.reservedSeats}</td>
+                                </tr>`;
+                        });
+                    }
+                    document.getElementById("showtimeResults").style.display = "block";
+                })
+                .catch(error => console.error("Error fetching showtimes:", error));
+        }
+
+
+
+        function searchReservation() {
+            const searchTypeTwo = document.getElementById('searchTypeTwo').value;
+            const searchQueryTwo = document.getElementById('searchQueryTwo').value.trim();
+
+            if (!searchQueryTwo) {
+                //alert("Please enter a search term.");
+                return;
+            }
+
+            fetch(`/Reservation/SearchReservationByUserOrTicket?filterBy=${searchTypeTwo}&query=${encodeURIComponent(searchQueryTwo)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById("reservationTableBody");
+                    tableBody.innerHTML = "";
+
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="6" class="text-muted">No results found.</td></tr>';
+                    } else {
+                        data.forEach(res => {
+                            tableBody.innerHTML += `
+                                <tr>
+                                    <td>${res.ticketNumber}</td>
+                                    <td>${res.userEmail}</td>
+                                    <td>${res.movie}</td>
+                                    <td>${res.theatre}</td>
+                                    <td>${res.hall}</td>
+                                    <td>${res.showDate}</td>
+                                    <td>${res.seatNumber}</td>
+                                    <td>${res.status}</td>
+                                    <td>${res.paymentStatus}</td>
+                                </tr>`;
+                        });
+                    }
+                    document.getElementById("reservationResults").style.display = "block";
+                })
+                .catch(error => console.error("Error fetching showtimes:", error));
+        }
+    </script>
+}
+
