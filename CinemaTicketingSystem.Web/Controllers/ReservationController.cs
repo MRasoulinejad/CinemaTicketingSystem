@@ -111,14 +111,28 @@ namespace CinemaTicketingSystem.Web.Controllers
                     break;
 
                 case "ticket":
-                    // Fetch reservations by ticket ID
-                    var reservation = _unitOfWork.Reservations.Get(r => r.ReservationId == int.Parse(query));
+
+                    if (query.Contains("@"))
+                    {
+                        return BadRequest(new { message = "For ticket search, please enter the ticket number, not an email address." });
+                    }
+
+                    // Attempt to parse the input into an integer
+                    if (!int.TryParse(query, out ticketId))
+                    {
+                        return BadRequest(new { message = "The ticket input must be a valid number." });
+                    }
+
+                    // Search for the reservation by ticket ID
+                    var reservation = _unitOfWork.Reservations.Get(r => r.ReservationId == ticketId);
                     if (reservation == null)
                     {
                         return NotFound(new { message = "Ticket not found." });
                     }
-                    ticketId = reservation.ReservationId;
+
+                    // Retrieve the user associated with the reservation
                     user = _userManager.Users.FirstOrDefault(u => u.Id == reservation.UserId);
+
                     break;
 
                 default:
