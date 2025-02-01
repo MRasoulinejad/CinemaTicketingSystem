@@ -256,7 +256,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                 LastName = user.LastName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                Roles = roles.ToList(),
+                Roles = roles.FirstOrDefault(),
                 AllRoles = _roleManager.Roles.Select(r => r.Name).ToList() // Get all available roles
             };
 
@@ -301,7 +301,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
             // Update roles if different
             var currentRoles = await _userManager.GetRolesAsync(user);
-            var newRole = model.Roles.FirstOrDefault(); // Assuming a single role from the model
+            var newRole = model.Roles; // Assuming a single role from the model
             if (!string.IsNullOrEmpty(newRole) && !currentRoles.Contains(newRole))
             {
                 // Remove existing roles
