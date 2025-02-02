@@ -253,7 +253,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                 return NotFound("Hall not found.");
             }
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
 
             // Fetch all relevant temporary reservations for the given ShowTime within the last 5 minutes
             var temporaryReservations = _unitOfWork.TemporarySeatReservations.GetAll(r =>

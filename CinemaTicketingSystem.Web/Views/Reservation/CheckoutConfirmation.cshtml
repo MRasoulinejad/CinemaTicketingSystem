@@ -83,7 +83,9 @@
 @section Scripts {
     <script>
         // ReservedAt from the backend
-        const reservedAt = new Date('@Model.ReservedAt.ToString("yyyy-MM-ddTHH:mm:ss")');
+        const reservedAt = new Date('@Model.ReservedAt.ToString("yyyy-MM-ddTHH:mm:ssZ")');
+
+
         const countdownTimer = document.getElementById('countdown-timer');
         const expirationTime = new Date(reservedAt.getTime() + 5 * 60000); // Add 5 minutes to reservedAt
 
