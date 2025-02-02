@@ -1,4 +1,5 @@
-﻿using CinemaTicketingSystem.Application.Utility;
+﻿using CinemaTicketingSystem.Application.Common.Interfaces;
+using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -19,16 +20,18 @@ namespace CinemaTicketingSystem.Web.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUnitOfWork _unitOfWork;
 
         public AccountController(IConfiguration configuration, IHttpClientFactory httpClientFactory,
             SignInManager<ApplicationUser> signInManager,
-            UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+            UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
             _signInManager = signInManager;
             _userManager = userManager;
             _roleManager = roleManager;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IActionResult> Login()
@@ -320,6 +323,33 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
             TempData["success"] = "User data successfully updated";
             return RedirectToAction("AdminUserManager");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MyAccount()
+        {
+            var userName = User.Identity.Name;
+
+            if(userName == null) return RedirectToAction("Login","Account");
+
+            var user = await _userManager.FindByNameAsync(userName);
+
+            if (user == null) return NotFound("User not found");
+
+            var reservations = _unitOfWork.Reservations.GetAll(r => r.UserId == user.Id,
+                includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat").ToList();
+
+            var model = new MyAccountVM
+            {
+                UserId = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Reservations = reservations
+            };
+
+            return View(model);
         }
     }
 }

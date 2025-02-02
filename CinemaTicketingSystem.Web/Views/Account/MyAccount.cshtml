@@ -1,0 +1,174 @@
+﻿@model MyAccountVM
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "My Account";
+}
+
+<div class="container my-5">
+    <h2 class="text-center mb-4 fw-bold text-primary">👤 My Account</h2>
+
+    <!-- User Info Card -->
+    <div class="card shadow-lg rounded-4 p-4 mb-4 bg-light">
+        <div class="row g-4 align-items-center">
+            <div class="col-md-2 text-center">
+                <img src="https://avatar.iran.liara.run/public" width="100" class="rounded-circle" alt="User Avatar">
+            </div>
+            <div class="col-md-10">
+                <h4 class="fw-bold">@Model.FirstName @Model.LastName</h4>
+                <p><strong>Email:</strong> @Model.Email</p>
+                <p><strong>Phone Number:</strong> @Model.PhoneNumber</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservation History Table -->
+    <h3 class="fw-bold text-primary mt-5">🎟️ My Reservations</h3>
+
+    @if (Model.Reservations.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mt-3">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Ticket Number</th>
+                        <th>Movie</th>
+                        <th>Theatre</th>
+                        <th>Seat</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="reservationTableBody">
+                    @foreach (var reservation in Model.Reservations.Take(10))
+                    {
+                        <tr>
+                            <td>@reservation.ReservationId</td>
+                            <td>@reservation.ShowTime.Movie.Title</td>
+                            <td>@reservation.ShowTime.Theatre.TheatreName</td>
+                            <td>@reservation.Seat.SectionName @reservation.Seat.SeatNumber</td>
+                            <td>@reservation.ShowTime.ShowDate.ToString("MMMM dd, yyyy")</td>
+                            <td>@reservation.ShowTime.ShowTimeStart - @reservation.ShowTime.ShowTimeEnd</td>
+                            <td class="text-success fw-bold">$@reservation.ShowTime.Price</td>
+                            <td>
+                                <span class="badge bg-@(reservation.PaymentStatus == "Paid" ? "success" : "danger")">
+                                    @reservation.PaymentStatus
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mt-4" id="pagination">
+            </ul>
+        </nav>
+    }
+    else
+    {
+        <p class="text-center text-muted mt-4">You have no reservations yet.</p>
+    }
+
+    <!-- Action Buttons -->
+    <div class="text-center mt-5">
+        <a href="/" class="btn btn-lg btn-secondary px-5">Return to Homepage 🏠</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let reservations = @Html.Raw(Json.Serialize(Model.Reservations));
+            let itemsPerPage = 10;
+            let currentPage = 1;
+
+            function displayReservations(page) {
+                let start = (page - 1) * itemsPerPage;
+                let end = start + itemsPerPage;
+                let tableBody = document.getElementById("reservationTableBody");
+                tableBody.innerHTML = "";
+
+                reservations.slice(start, end).forEach((res, index) => {
+                    let row = `<tr>
+                        <td>${res.reservationId}</td>
+                        <td>${res.showTime.movie.title}</td>
+                        <td>${res.showTime.theatre.theatreName}</td>
+                        <td>${res.seat.sectionName} ${res.seat.seatNumber}</td>
+                        <td>${res.showTime.showDate}</td>
+                        <td>${res.showTime.showTimeStart} - ${res.showTime.showTimeEnd}</td>
+                        <td class="text-success fw-bold">$${res.showTime.price}</td>
+                        <td><span class="badge bg-${res.paymentStatus === "Paid" ? "success" : "danger"}">
+                            ${res.paymentStatus}</span></td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+
+                updatePagination();
+            }
+
+            function updatePagination() {
+                let pageCount = Math.ceil(reservations.length / itemsPerPage);
+                let pagination = document.getElementById("pagination");
+                pagination.innerHTML = "";
+
+                // First Page Button
+                pagination.innerHTML += `<li class="page-item ${currentPage === 1 ? "disabled" : ""}">
+                    <a class="page-link pagination-link" href="#" data-page="1">&laquo;</a>
+                </li>`;
+
+                let maxPagesToShow = 5;
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(pageCount, startPage + maxPagesToShow - 1);
+
+                if (startPage > 1) {
+                    pagination.innerHTML += `<li class="page-item"><a class="page-link pagination-link" href="#" data-page="1">1</a></li>`;
+                    if (startPage > 2) pagination.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    let li = document.createElement("li");
+                    li.className = `page-item ${i === currentPage ? "active" : ""}`;
+                    li.innerHTML = `<a class="page-link pagination-link" href="#" data-page="${i}">${i}</a>`;
+                    pagination.appendChild(li);
+                }
+
+                if (endPage < pageCount) {
+                    if (endPage < pageCount - 1) pagination.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    pagination.innerHTML += `<li class="page-item"><a class="page-link pagination-link" href="#" data-page="${pageCount}">${pageCount}</a></li>`;
+                }
+
+                // Last Page Button
+                pagination.innerHTML += `<li class="page-item ${currentPage === pageCount ? "disabled" : ""}">
+                    <a class="page-link pagination-link" href="#" data-page="${pageCount}">&raquo;</a>
+                </li>`;
+
+                addPaginationClickEvents();
+            }
+
+            function addPaginationClickEvents() {
+                document.querySelectorAll(".pagination-link").forEach(link => {
+                    link.addEventListener("click", function (event) {
+                        event.preventDefault(); // Prevent jumping to top
+                        let page = parseInt(this.getAttribute("data-page"));
+                        changePage(page);
+                    });
+                });
+            }
+
+            window.changePage = function (page) {
+                currentPage = page;
+                displayReservations(currentPage);
+            };
+
+            displayReservations(currentPage);
+        });
+    </script>
+}
+
+
+

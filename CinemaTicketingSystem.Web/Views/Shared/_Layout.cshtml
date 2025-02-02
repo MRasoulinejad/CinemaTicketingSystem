@@ -23,8 +23,13 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
+
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Movie" asp-action="Index">Movies</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Theatre" asp-action="AllTheatres">Theatres</a>
                         </li>
 
                         <li class="nav-item">
@@ -34,7 +39,7 @@
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Reservation" asp-action="Index">Reservations</a>
+                                <a class="nav-link" asp-controller="Account" asp-action="MyAccount">My Account</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Account" asp-action="Logout">Logout</a>

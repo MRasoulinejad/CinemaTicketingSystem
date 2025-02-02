@@ -1,0 +1,30 @@
+﻿@model IEnumerable<Theatre>
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "All Theatres";
+}
+
+<div class="container my-5">
+    <h2 class="text-center mb-4 fw-bold text-primary">🎭 Select Your Theatre</h2>
+
+    <div class="row g-4">
+        @foreach (var theatre in Model)
+        {
+            <div class="col-lg-4 col-md-6">
+                <a href="@Url.Action("CreateReservation", "Reservation", new { theatreId = theatre.TheatreId })"
+                   class="theatre-item shadow-sm p-3 rounded-3 d-flex flex-column">
+                    <div class="theatre-details">
+                        <h5 class="fw-bold text-dark text-truncate">@theatre.TheatreName</h5>
+                        <p class="text-muted mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i> @theatre.Location</p>
+                    </div>
+                    <div class="mt-auto text-center">
+                        <button class="btn btn-outline-primary fw-bold w-100">View Showtimes</button>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+

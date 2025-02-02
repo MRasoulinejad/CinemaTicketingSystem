@@ -56,7 +56,7 @@
                             <p class="card-text">📍 Location: @theatre.Location</p>
                         </div>
                         <div class="card-footer text-center">
-                            <a asp-controller="Theatre" asp-action="Details" asp-route-id="@theatre.TheatreId" class="btn btn-primary btn-sm">View Details</a>
+                            <a asp-controller="Reservation" asp-action="CreateReservation" asp-route-theatreId="@theatre.TheatreId" class="btn btn-primary btn-sm">View Details</a>
                         </div>
                     </div>
                 </div>

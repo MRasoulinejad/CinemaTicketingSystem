@@ -27,10 +27,13 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View();
         }
 
-        public IActionResult Details(int id)
+        [Route("Theatre/AllTheatres")]
+        public IActionResult GetAllTheatres()
         {
-            var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == id);
-            return View(theatre);
+
+            var theatres = _unitOfWork.Theatres.GetAll().ToList();
+
+            return View(theatres);
         }
 
         public IActionResult CreateTheatre()

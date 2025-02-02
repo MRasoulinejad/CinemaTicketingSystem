@@ -319,3 +319,58 @@ html, body {
 .d-flex.gap-4 > .ticket-card {
     margin: 10px 0;
 }
+
+
+
+
+/* Standardized Card Size */
+.theatre-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 150px; /* Fixed Height */
+    background-color: white;
+    border: 1px solid #ddd;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease-in-out;
+    padding: 15px;
+    border-radius: 10px;
+    overflow: hidden; /* Prevent overflow */
+}
+
+    /* Card Hover Effect */
+    .theatre-item:hover {
+        background-color: #f8f9fa;
+        border-left: 5px solid #0d6efd;
+        transform: scale(1.02);
+    }
+
+/* Truncate Long Theatre Names */
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+/* Grid Layout */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Responsive Layout */
+@media (max-width: 991px) {
+    .col-lg-4 {
+        width: 50%; /* Two columns on medium screens */
+    }
+}
+
+@media (max-width: 767px) {
+    .col-lg-4 {
+        width: 100%; /* Full width on small screens */
+    }
+}
+
+
