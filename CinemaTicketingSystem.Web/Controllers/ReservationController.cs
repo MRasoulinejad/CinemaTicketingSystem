@@ -343,7 +343,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                         SeatId = seatId,
                         UserId = user.Id,
                         ReservedAt = now,
-                        IsConfirmed = false
+                        //IsConfirmed = false
                     };
 
                     _unitOfWork.TemporarySeatReservations.Add(reservation);

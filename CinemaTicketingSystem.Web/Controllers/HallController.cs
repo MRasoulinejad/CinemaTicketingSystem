@@ -76,7 +76,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                                 HallId = section.HallId,
                                 SectionName = section.SectionName,
                                 SeatNumber = i,
-                                IsReserved = false
+                                //IsReserved = false
                             });
                         }
                         _unitOfWork.Save();
@@ -217,7 +217,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                                 HallId = hall.HallId,
                                 SectionName = item.SectionName,
                                 SeatNumber = i,
-                                IsReserved = false
+                                //IsReserved = false
                             });
                         }
                         _unitOfWork.Save();

@@ -29,7 +29,5 @@ namespace CinemaTicketingSystem.Domain.Entities
         public ApplicationUser User { get; set; }
 
         public DateTime ReservedAt { get; set; } // Reservation Time
-
-        public bool IsConfirmed { get; set; } = false; // Whether the reservation is confirmed
     }
 }

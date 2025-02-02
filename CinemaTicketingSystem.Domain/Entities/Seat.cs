@@ -17,8 +17,6 @@ namespace CinemaTicketingSystem.Domain.Entities
         [Required]
         public int SeatNumber { get; set; }
         [Required]
-        public bool IsReserved { get; set; }
-        [Required]
         public int HallId { get; set; }
         [ForeignKey("HallId")]
         public Hall Hall { get; set; }
