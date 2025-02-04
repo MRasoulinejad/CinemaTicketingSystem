@@ -20,6 +20,19 @@
                 </div>
                 <div class="card-body">
                     <form asp-action="Contact" method="post">
+
+                        @{
+                            if (TempData["ErrorMessage"] != null)
+                            {
+                                <div class="alert alert-danger mt-3">@TempData["ErrorMessage"]</div>
+                            }
+                            if (TempData["SuccessMessage"] != null)
+                            {
+                                <div class="alert alert-success mt-3">@TempData["SuccessMessage"]</div>
+                            }
+                        }
+
+
                         <div class="mb-3">
                             <label for="Name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="Name" name="Name" placeholder="Your Name" required>

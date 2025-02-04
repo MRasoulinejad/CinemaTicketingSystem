@@ -31,6 +31,9 @@ builder.Services.AddHostedService<TemporarySeatReservationCleanupService>();
 // Register the ReCaptcha Validator
 builder.Services.AddTransient<IReCaptchaValidator, GoogleReCaptchaValidator>();
 
+// Register the SMTP Email Service
+builder.Services.AddTransient<ISmtpEmailService, SMTPEmailService>();
+
 var app = builder.Build();
 
 StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();

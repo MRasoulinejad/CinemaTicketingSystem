@@ -15,13 +15,15 @@ namespace CinemaTicketingSystem.Web.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly IReCaptchaValidator _reCaptchaValidator;
+        private readonly ISmtpEmailService _emailService;
 
         public HomeController(IUnitOfWork unitOfWork, IConfiguration configuration,
-            IReCaptchaValidator reCaptchaValidator)
+            IReCaptchaValidator reCaptchaValidator, ISmtpEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _reCaptchaValidator = reCaptchaValidator;
+            _emailService = emailService;
         }
 
 
@@ -78,7 +80,7 @@ namespace CinemaTicketingSystem.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult Contact(ContactFormVM model)
+        public async Task<IActionResult> Contact(ContactFormVM model)
         {
             string Response = Request.Form["g-recaptcha-response"];
 
@@ -89,12 +91,29 @@ namespace CinemaTicketingSystem.Web.Controllers
                 ViewData["Error"] = "Invalid reCAPTCHA. Please try again.";
                 return View();
             }
+
             // Send Email
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Get the admin email from configuration
+                    string adminEmail = _configuration["SMTP:AdminEmail"];
+                    string subject = $"Contact Form Submission: {model.Subject}";
+                    string body = $"Message from: {model.Name} ({model.Email})<br/><br/>{model.Message}";
+                    await _emailService.SendEmailAsync(adminEmail, subject, body);
+                    TempData["SuccessMessage"] = "Your message has been sent successfully!";
+                    return RedirectToAction("Contact");
+                }
+                catch (Exception ex)
+                {
+                    //Error
+                    TempData["ErrorMessage"] = "An error occurred while sending your message. Please try again.";
+                    return RedirectToAction("Contact");
+                }
+            }
 
-
-            // SendEmail(model);
-            TempData["SuccessMessage"] = "Your message has been sent successfully!";
-            return RedirectToAction("Contact");
+            return View(model);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
