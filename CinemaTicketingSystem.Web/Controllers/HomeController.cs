@@ -1,4 +1,5 @@
 using CinemaTicketingSystem.Application.Common.Interfaces;
+using CinemaTicketingSystem.Application.ExternalServices;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Web.Models;
@@ -12,10 +13,15 @@ namespace CinemaTicketingSystem.Web.Controllers
     {
 
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IConfiguration _configuration;
+        private readonly IReCaptchaValidator _reCaptchaValidator;
 
-        public HomeController(IUnitOfWork unitOfWork)
+        public HomeController(IUnitOfWork unitOfWork, IConfiguration configuration,
+            IReCaptchaValidator reCaptchaValidator)
         {
             _unitOfWork = unitOfWork;
+            _configuration = configuration;
+            _reCaptchaValidator = reCaptchaValidator;
         }
 
 
@@ -59,6 +65,36 @@ namespace CinemaTicketingSystem.Web.Controllers
             ViewData["HeroTitle"] = "About Our Cinema";
             ViewData["HeroSubtitle"] = "Learn more about our state-of-the-art facilities.";
             return View();
+        }
+
+        public IActionResult Contact()
+        {
+            ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
+
+            ViewData["HeroImageUrl"] = "/images/hero-banner.jpg";
+            ViewData["HeroTitle"] = "Contact Us";
+            ViewData["HeroSubtitle"] = "Get in touch with us for any queries or feedback.";
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Contact(ContactFormVM model)
+        {
+            string Response = Request.Form["g-recaptcha-response"];
+
+            // Validate Google reCAPTCHA
+            if (!_reCaptchaValidator.ValidateReCaptcha(Response))
+            {
+                ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
+                ViewData["Error"] = "Invalid reCAPTCHA. Please try again.";
+                return View();
+            }
+            // Send Email
+
+
+            // SendEmail(model);
+            TempData["SuccessMessage"] = "Your message has been sent successfully!";
+            return RedirectToAction("Contact");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

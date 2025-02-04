@@ -1,4 +1,5 @@
 using CinemaTicketingSystem.Application.Common.Interfaces;
+using CinemaTicketingSystem.Application.ExternalServices;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Infrastructure.Repository;
@@ -26,6 +27,9 @@ builder.Services.AddHttpClient();
 
 // Register the background service
 builder.Services.AddHostedService<TemporarySeatReservationCleanupService>();
+
+// Register the ReCaptcha Validator
+builder.Services.AddTransient<IReCaptchaValidator, GoogleReCaptchaValidator>();
 
 var app = builder.Build();
 
