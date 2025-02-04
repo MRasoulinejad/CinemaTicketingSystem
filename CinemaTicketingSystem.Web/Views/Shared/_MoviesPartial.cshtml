@@ -1,0 +1,31 @@
+﻿@model MovieIndexViewModel
+
+@foreach (var movie in Model.Movies)
+{
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <img src="@movie.Poster" class="card-img-top" alt="@movie.Title Poster" style="height: 250px; object-fit: cover;">
+            <div class="card-body">
+                <h5 class="card-title">@movie.Title</h5>
+                <p class="card-text">🎭 Genre: @movie.Genre</p>
+                <p class="card-text">⏳ Duration: @movie.Duration min</p>
+                <p class="card-text">📅 Release Date: @movie.ReleaseDate.ToString("yyyy-MM-dd")</p>
+            </div>
+            <div class="card-footer text-center">
+                <a asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-primary btn-sm">View Details</a>
+                <a asp-action="Reservation" asp-route-id="@movie.MovieId" class="btn btn-success btn-sm">Book Now</a>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.HasMore)
+{
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <button id="loadMoreBtn" class="btn btn-outline-primary" data-skip="@(Model.Skip + Model.Movies.Count)">Load More</button>
+            </div>
+        </div>
+    </div>
+}

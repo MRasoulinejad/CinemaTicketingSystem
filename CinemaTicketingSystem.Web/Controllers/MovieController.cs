@@ -19,32 +19,22 @@ namespace CinemaTicketingSystem.Web.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
+        // Initial page load: load the first 9 movies
         public IActionResult Index()
         {
-            //var movies = _movieRepository.GetAll();
-            //var latestMovies = movies.OrderByDescending(m => m.ReleaseDate).Take(9).ToList();
+            int skip = 0;
+            var movies = _unitOfWork.Movies.GetAll()
+                .OrderByDescending(m => m.ReleaseDate)
+                .Skip(skip)
+                .Take(9)
+                .ToList();
 
-            // Sample Movie Data
-            var movies = new List<Movie>
-        {
-            new Movie { MovieId = 12, Title = "Inception", Genre = "Sci-Fi", Duration = 148, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-1)), Poster = "/images/movie1.jpg" },
-            new Movie { MovieId = 2, Title = "Interstellar", Genre = "Adventure", Duration = 169, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-2)), Poster = "/images/movie2.jpg" },
-            new Movie { MovieId = 3, Title = "Avengers: Endgame", Genre = "Action", Duration = 181, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-3)), Poster = "/images/movie3.jpg" },
-            new Movie { MovieId = 4, Title = "The Batman", Genre = "Action", Duration = 155, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-4)), Poster = "/images/movie4.jpg" },
-            new Movie { MovieId = 5, Title = "Spider-Man: No Way Home", Genre = "Adventure", Duration = 148, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-5)), Poster = "/images/movie5.jpg" },
-            new Movie { MovieId = 6, Title = "Dune", Genre = "Sci-Fi", Duration = 155, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-6)), Poster = "/images/movie6.jpg" },
-            new Movie { MovieId = 7, Title = "Shang-Chi", Genre = "Action", Duration = 132, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-7)), Poster = "/images/movie7.jpg" },
-            new Movie { MovieId = 8, Title = "Tenet", Genre = "Sci-Fi", Duration = 150, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-8)), Poster = "/images/movie8.jpg" },
-            new Movie { MovieId = 9, Title = "Joker", Genre = "Drama", Duration = 122, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-9)), Poster = "/images/movie9.jpg" }
-        };
-
-            // Take the latest 9 movies
-            var latestMovies = movies.OrderByDescending(m => m.ReleaseDate).Take(9).ToList();
-
+            int totalMovies = _unitOfWork.Movies.GetAll().Count();
             var viewModel = new MovieIndexViewModel
             {
-                AllMovies = movies,
-                LatestMovies = latestMovies
+                Movies = movies,
+                Skip = skip,
+                HasMore = totalMovies > skip + 9
             };
 
             ViewData["HeroImageUrl"] = "/images/movies-hero.jpg";
@@ -52,6 +42,26 @@ namespace CinemaTicketingSystem.Web.Controllers
             ViewData["HeroSubtitle"] = "Discover the latest blockbusters and timeless classics. Book your tickets now!";
 
             return View(viewModel);
+        }
+
+        // AJAX endpoint to load more movies
+        public IActionResult LoadMore(int skip)
+        {
+            var movies = _unitOfWork.Movies.GetAll()
+            .OrderByDescending(m => m.ReleaseDate)
+            .Skip(skip)
+            .Take(9)
+            .ToList();
+
+            int totalMovies = _unitOfWork.Movies.GetAll().Count();
+            var viewModel = new MovieIndexViewModel
+            {
+                Movies = movies,
+                Skip = skip,
+                HasMore = totalMovies > skip + 9
+            };
+
+            return PartialView("_MoviesPartial", viewModel);
         }
 
         public IActionResult Details(int id)

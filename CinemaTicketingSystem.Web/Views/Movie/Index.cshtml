@@ -1,20 +1,14 @@
 ﻿@model MovieIndexViewModel
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Latest Movies";
+}
 
-<!-- 🔍 Search Bar -->
-<section class="container my-4">
-    <h2 class="text-center mb-4">🔍 Search Movies</h2>
-    <div class="mb-3">
-        <input type="text" id="searchInput" class="form-control" placeholder="Search for a movie by title, genre, or release date...">
-    </div>
-</section>
-
-<!-- 🎥 Latest Movies Section -->
 <section class="container mb-5">
     <h2 class="text-center mb-4">🎬 Latest Movies</h2>
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        @foreach (var movie in Model.LatestMovies)
+    <div class="row row-cols-1 row-cols-md-3 g-4" id="moviesContainer">
+        @foreach (var movie in Model.Movies)
         {
             <div class="col">
                 <div class="card h-100 shadow-sm">
@@ -27,7 +21,18 @@
                     </div>
                     <div class="card-footer text-center">
                         <a asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-primary btn-sm">View Details</a>
-                        <a asp-action="Reservation" asp-route-id="@movie.MovieId" class="btn btn-success btn-sm">Book Now</a>
+                        <a asp-controller="Reservation" asp-action="CreateReservation" asp-route-movieId="@movie.MovieId" class="btn btn-success btn-sm">Book Now</a>
+                    </div>
+                </div>
+            </div>
+        }
+        @* Load More Card *@
+        @if (Model.HasMore)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex align-items-center justify-content-center">
+                        <button id="loadMoreBtn" class="btn btn-outline-primary" data-skip="@(Model.Movies.Count)">Load More</button>
                     </div>
                 </div>
             </div>
@@ -35,139 +40,25 @@
     </div>
 </section>
 
-<!-- 📊 Movie Table -->
-<section class="container my-5">
-    <h2 class="text-center mb-4">📊 All Movies</h2>
-    <div class="table-responsive shadow-sm rounded">
-        <table class="table table-hover table-bordered align-middle text-center" id="movieTable">
-            <thead class="table-dark">
-                <tr>
-                    <th>#</th>
-                    <th>Poster</th>
-                    <th>Title</th>
-                    <th>Genre</th>
-                    <th>Duration</th>
-                    <th>Release Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var movie in Model.AllMovies)
-                {
-                    <tr>
-                        <td>@movie.MovieId</td>
-                        <td>
-                            <img src="@movie.Poster" alt="@movie.Title Poster" class="img-thumbnail" style="width: 80px; height: 120px;">
-                        </td>
-                        <td>@movie.Title</td>
-                        <td>@movie.Genre</td>
-                        <td>@movie.Duration min</td>
-                        <td>@movie.ReleaseDate.ToString("yyyy-MM-dd")</td>
-                        <td>
-                            <a asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-sm btn-primary">View</a>
-                            <a asp-action="Edit" asp-route-id="@movie.MovieId" class="btn btn-sm btn-warning">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@movie.MovieId" class="btn btn-sm btn-danger">Delete</a>
-                        </td>
-                    </tr>
+@section Scripts {
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).on('click', '#loadMoreBtn', function () {
+            var skip = $(this).data('skip');
+
+            $.ajax({
+                url: '@Url.Action("LoadMore", "Movie")',
+                data: { skip: skip },
+                success: function (data) {
+                    // Remove the current Load More card
+                    $('#loadMoreBtn').closest('.col').remove();
+                    // Append the new batch of movies (which includes a new Load More card if there are more movies)
+                    $('#moviesContainer').append(data);
+                },
+                error: function (err) {
+                    console.error("Error loading more movies:", err);
                 }
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<!-- 🔧 JavaScript for Live Search -->
-<script>
-    document.getElementById('searchInput').addEventListener('keyup', function () {
-        let searchQuery = this.value.toLowerCase();
-        let rows = document.querySelectorAll('#movieTable tbody tr');
-
-        rows.forEach(row => {
-            let title = row.cells[2].textContent.toLowerCase();
-            let genre = row.cells[3].textContent.toLowerCase();
-            let releaseDate = row.cells[5].textContent.toLowerCase();
-
-            if (title.includes(searchQuery) || genre.includes(searchQuery) || releaseDate.includes(searchQuery)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+            });
         });
-    });
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@* @model IEnumerable<CinemaTicketingSystem.Domain.Entities.Movie>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-
-<div class="container my-5">
-    <h2 class="text-center mb-4">🎬 Movie List</h2>
-    <div class="table-responsive shadow-sm rounded">
-        <table class="table table-hover table-bordered align-middle text-center">
-            <thead class="table-dark">
-                <tr>
-                    <th>#</th>
-                    <th>Poster</th>
-                    <th>Title</th>
-                    <th>Genre</th>
-                    <th>Duration</th>
-                    <th>Release Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var movie in Model)
-                {
-                    <tr>
-                        <td>@movie.MovieId</td>
-                        <td>
-                            <img src="@movie.Poster" alt="@movie.Title Poster" class="img-thumbnail" style="width: 80px; height: 120px;">
-                        </td>
-                        <td>@movie.Title</td>
-                        <td>@movie.Genre</td>
-                        <td>@movie.Duration min</td>
-                        <td>@movie.ReleaseDate.ToShortDateString()</td>
-                        <td>
-                            <a asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-sm btn-primary">View</a>
-                            <a asp-action="Edit" asp-route-id="@movie.MovieId" class="btn btn-sm btn-warning">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@movie.MovieId" class="btn btn-sm btn-danger">Delete</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</div> *@
-
+    </script>
+}
