@@ -172,6 +172,13 @@ namespace CinemaTicketingSystem.Web.Controllers
             {
                 try
                 {
+                    
+                    // 🛠️ map the view model to the domain model
+                    var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == model.TheatreId);
+                    theatre.TheatreName = model.TheatreName;
+                    theatre.Location = model.Location;
+                    theatre.Description = model.Description;
+
                     string uniqueFileName = null;
                     if (model.TheatreImage != null)
                     {
@@ -190,14 +197,10 @@ namespace CinemaTicketingSystem.Web.Controllers
                         {
                             model.TheatreImage.CopyTo(fileStream);
                         }
+                        theatre.TheatreImage = uniqueFileName != null ? "/images/TheatreImages/" + uniqueFileName : null;
                     }
-                    // 🛠️ map the view model to the domain model
-                    var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == model.TheatreId);
-                    theatre.TheatreName = model.TheatreName;
-                    theatre.Location = model.Location;
-                    theatre.Description = model.Description;
-                    theatre.TheatreImage = uniqueFileName != null ? "/images/TheatreImages/" + uniqueFileName : null;
-                    // 🗃️ Add the movie to the database
+
+                    // 🗃️ Add the theatre to the database
                     _unitOfWork.Theatres.Update(theatre);
                     _unitOfWork.Save();
                     ViewData["success"] = "Theatre successfully updated.";
