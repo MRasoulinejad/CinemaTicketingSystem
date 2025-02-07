@@ -1,5 +1,6 @@
 using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.ExternalServices;
+using CinemaTicketingSystem.Application.Services.Interfaces;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Web.Models;
@@ -16,14 +17,16 @@ namespace CinemaTicketingSystem.Web.Controllers
         private readonly IConfiguration _configuration;
         private readonly IReCaptchaValidator _reCaptchaValidator;
         private readonly ISmtpEmailService _emailService;
+        private readonly IMovieService _movieService;
 
         public HomeController(IUnitOfWork unitOfWork, IConfiguration configuration,
-            IReCaptchaValidator reCaptchaValidator, ISmtpEmailService emailService)
+            IReCaptchaValidator reCaptchaValidator, ISmtpEmailService emailService, IMovieService movieService)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _reCaptchaValidator = reCaptchaValidator;
             _emailService = emailService;
+            _movieService = movieService;
         }
 
 
@@ -35,11 +38,13 @@ namespace CinemaTicketingSystem.Web.Controllers
                 .Take(3)
                 .ToList();
 
+
             // Take 9 Random Movies
             var movies = _unitOfWork.Movies.GetAll()
                 .OrderBy(x => Guid.NewGuid())
                 .Take(9)
                 .ToList();
+
 
 
             // Pass both to the View using a ViewModel

@@ -1,4 +1,6 @@
-﻿using CinemaTicketingSystem.Application.Common.Interfaces;
+﻿using CinemaTicketingSystem.Application.Common.DTO;
+using CinemaTicketingSystem.Application.Common.Interfaces;
+using CinemaTicketingSystem.Application.Services.Interfaces;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Web.ViewModels;
@@ -12,29 +14,51 @@ namespace CinemaTicketingSystem.Web.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IMovieService _movieService;
 
-        public MovieController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
+        public MovieController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment
+            , IMovieService movieService)
         {
             _unitOfWork = unitOfWork;
             _webHostEnvironment = webHostEnvironment;
+            _movieService = movieService;
         }
 
         // Initial page load: load the first 9 movies
-        public IActionResult Index()
+        public async Task< IActionResult> Index()
         {
-            int skip = 0;
-            var movies = _unitOfWork.Movies.GetAll()
-                .OrderByDescending(m => m.ReleaseDate)
-                .Skip(skip)
-                .Take(9)
-                .ToList();
+            //int skip = 0;
+            //var movies = _unitOfWork.Movies.GetAll()
+            //    .OrderByDescending(m => m.ReleaseDate)
+            //    .Skip(skip)
+            //    .Take(9)
+            //    .ToList();
 
-            int totalMovies = _unitOfWork.Movies.GetAll().Count();
+            //int totalMovies = _unitOfWork.Movies.GetAll().Count();
+            //var viewModel = new MovieIndexViewModel
+            //{
+            //    Movies = movies,
+            //    Skip = skip,
+            //    HasMore = totalMovies > skip + 9
+            //};
+
+            int skip = 0;
+            MovieListDto dto = await _movieService.GetMoviesAsync(skip, 9);
+
+            // Map Application DTO to Web ViewModel
             var viewModel = new MovieIndexViewModel
             {
-                Movies = movies,
-                Skip = skip,
-                HasMore = totalMovies > skip + 9
+                Movies = dto.Movies.Select(m => new Movie
+                {
+                    MovieId = m.MovieId,
+                    Title = m.Title,
+                    Genre = m.Genre,
+                    Duration = m.Duration,
+                    ReleaseDate = m.ReleaseDate,
+                    Poster = m.Poster,
+                }).ToList(),
+                Skip = dto.Skip,
+                HasMore = dto.HasMore
             };
 
             ViewData["HeroImageUrl"] = "/images/movies-hero.jpg";
@@ -68,20 +92,6 @@ namespace CinemaTicketingSystem.Web.Controllers
         {
             if (id != null)
             {
-                // Sample Movie Data
-                //var movies = new List<Movie>
-                //{
-                //    new Movie { MovieId = 12, Title = "Inception", Genre = "Sci-Fi", Duration = 148, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-1)), Poster = "/images/movie1.jpg", TrailerUrl = "https://www.youtube.com/embed/LifqWf0BAOA" },
-                //    new Movie { MovieId = 2, Title = "Interstellar", Genre = "Adventure", Duration = 169, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-2)), Poster = "/images/movie2.jpg" },
-                //    new Movie { MovieId = 3, Title = "Avengers: Endgame", Genre = "Action", Duration = 181, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-3)), Poster = "/images/movie3.jpg" },
-                //    new Movie { MovieId = 4, Title = "The Batman", Genre = "Action", Duration = 155, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-4)), Poster = "/images/movie4.jpg" },
-                //    new Movie { MovieId = 5, Title = "Spider-Man: No Way Home", Genre = "Adventure", Duration = 148, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-5)), Poster = "/images/movie5.jpg" },
-                //    new Movie { MovieId = 6, Title = "Dune", Genre = "Sci-Fi", Duration = 155, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-6)), Poster = "/images/movie6.jpg" },
-                //    new Movie { MovieId = 7, Title = "Shang-Chi", Genre = "Action", Duration = 132, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-7)), Poster = "/images/movie7.jpg" },
-                //    new Movie { MovieId = 8, Title = "Tenet", Genre = "Sci-Fi", Duration = 150, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-8)), Poster = "/images/movie8.jpg" },
-                //    new Movie { MovieId = 9, Title = "Joker", Genre = "Drama", Duration = 122, ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-9)), Poster = "/images/movie9.jpg" }
-                //};
-
                 var movie = _unitOfWork.Movies.Get(x => x.MovieId == id);
 
 

@@ -68,5 +68,6 @@ namespace CinemaTicketingSystem.Infrastructure.Repository
         {
             dbSet.Remove(entity);
         }
+
     }
 }

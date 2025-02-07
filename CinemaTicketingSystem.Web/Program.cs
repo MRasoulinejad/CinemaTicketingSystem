@@ -1,5 +1,7 @@
 using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.ExternalServices;
+using CinemaTicketingSystem.Application.Services.Implementation;
+using CinemaTicketingSystem.Application.Services.Interfaces;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Infrastructure.Repository;
@@ -33,6 +35,9 @@ builder.Services.AddTransient<IReCaptchaValidator, GoogleReCaptchaValidator>();
 
 // Register the SMTP Email Service
 builder.Services.AddTransient<ISmtpEmailService, SMTPEmailService>();
+
+builder.Services.AddScoped<IMovieService, MovieService>();
+
 
 var app = builder.Build();
 
