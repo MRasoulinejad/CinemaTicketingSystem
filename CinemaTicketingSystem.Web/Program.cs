@@ -38,6 +38,7 @@ builder.Services.AddTransient<ISmtpEmailService, SMTPEmailService>();
 
 builder.Services.AddScoped<IMovieService, MovieService>();
 
+builder.Services.AddSingleton<IAppEnvironment, AppEnvironment>();
 
 var app = builder.Build();
 

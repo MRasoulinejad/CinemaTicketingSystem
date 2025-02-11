@@ -2,6 +2,7 @@
 using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.Services.Interfaces;
 using CinemaTicketingSystem.Domain.Entities;
+using System.Reflection;
 
 
 namespace CinemaTicketingSystem.Application.Services.Implementation
@@ -9,21 +10,70 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
     public class MovieService : IMovieService
     {
         private readonly IUnitOfWork _unitOfWork;
-        //private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IAppEnvironment _appEnvironment;
 
-        public MovieService(IUnitOfWork unitOfWork)
+        public MovieService(IUnitOfWork unitOfWork, IAppEnvironment appEnvironment)
         {
             _unitOfWork = unitOfWork;
+            _appEnvironment = appEnvironment;
         }
 
-        public Task AddMovieAsync(Movie movie)
+        public async Task AddMovieAsync(AddMovieDto model)
         {
-            throw new NotImplementedException();
+            string posterPath = null;
+
+            if (model.Poster != null)
+            {
+                var uploadsFolder = Path.Combine(_appEnvironment.WebRootPath, "images/movieImages");
+
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + model.Poster.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                await File.WriteAllBytesAsync(filePath, model.Poster.FileData);
+
+                posterPath = "/images/movieImages/" + uniqueFileName;
+            }
+
+            var movie = new Movie
+            {
+                Title = model.Title,
+                Genre = model.Genre,
+                Description = model.Description,
+                Duration = model.Duration,
+                ReleaseDate = model.ReleaseDate,
+                Poster = posterPath,
+                TrailerUrl = model.TrailerUrl
+            };
+
+            _unitOfWork.Movies.Add(movie);
+            _unitOfWork.Save();
         }
 
-        public Task DeleteMovieAsync(int id)
+        public async Task DeleteMovieAsync(int id)
         {
-            throw new NotImplementedException();
+            var movie = _unitOfWork.Movies.Get(m => m.MovieId == id);
+            if (movie == null)
+            {
+                throw new Exception("Movie not found.");
+            }
+
+            // Delete the movie's poster if it exists
+            if (!string.IsNullOrEmpty(movie.Poster))
+            {
+                var posterPath = Path.Combine(_appEnvironment.WebRootPath, movie.Poster.TrimStart('/'));
+                if (File.Exists(posterPath))
+                {
+                    File.Delete(posterPath);
+                }
+            }
+
+            _unitOfWork.Movies.Remove(movie);
+            _unitOfWork.Save();
         }
 
         public async Task<Movie> GetMovieByIdAsync(int id)
@@ -61,14 +111,62 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
             };
         }
 
-        public Task<MovieListDto> SearchMoviesAsync(string searchTerm, int page, int pageSize)
+        public async Task<List<Movie>> SearchMoviesAsync(string searchTerm)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return new List<Movie>();
+
+            return _unitOfWork.Movies.GetAll()
+                .Where(m => m.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
 
-        public Task UpdateMovieAsync(Movie movie)
+        public async Task UpdateMovieAsync(UpdateMovieDto model)
         {
-            throw new NotImplementedException();
+            var existingMovie = _unitOfWork.Movies.Get(m => m.MovieId == model.MovieId);
+            if (existingMovie == null)
+            {
+                throw new Exception("Movie not found.");
+            }
+
+            // Update basic properties
+            existingMovie.Title = model.Title;
+            existingMovie.Genre = model.Genre;
+            existingMovie.Description = model.Description;
+            existingMovie.Duration = model.Duration;
+            existingMovie.ReleaseDate = model.ReleaseDate;
+            existingMovie.TrailerUrl = model.TrailerUrl;
+
+            // Handle new poster upload
+            if (model.NewPoster != null)
+            {
+                var uploadsFolder = Path.Combine(_appEnvironment.WebRootPath, "images/movieImages");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                // Save new poster
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + model.NewPoster.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                await File.WriteAllBytesAsync(filePath, model.NewPoster.FileData);
+
+                // Delete old poster if it exists
+                if (!string.IsNullOrEmpty(model.PosterPath))
+                {
+                    var oldPosterPath = Path.Combine(_appEnvironment.WebRootPath, model.PosterPath.TrimStart('/'));
+                    if (File.Exists(oldPosterPath))
+                    {
+                        File.Delete(oldPosterPath);
+                    }
+                }
+
+                // Update database with new poster path
+                existingMovie.Poster = "/images/movieImages/" + uniqueFileName;
+            }
+
+            _unitOfWork.Movies.Update(existingMovie);
+            _unitOfWork.Save();
         }
     }
 

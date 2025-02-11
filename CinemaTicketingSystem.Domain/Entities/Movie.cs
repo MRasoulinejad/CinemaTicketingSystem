@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace CinemaTicketingSystem.Domain.Entities
 {
@@ -27,5 +29,6 @@ namespace CinemaTicketingSystem.Domain.Entities
         public string Poster { get; set; }
         [Required]
         public string TrailerUrl { get; set; }
+
     }
 }

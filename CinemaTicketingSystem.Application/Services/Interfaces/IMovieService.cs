@@ -14,11 +14,11 @@ namespace CinemaTicketingSystem.Application.Services.Interfaces
 
         Task<Movie> GetMovieByIdAsync(int id);
 
-        Task<MovieListDto> SearchMoviesAsync(string searchTerm, int page, int pageSize);
+        Task<List<Movie>> SearchMoviesAsync(string searchTerm);
 
-        Task AddMovieAsync(Movie movie);
+        Task AddMovieAsync(AddMovieDto model);
 
-        Task UpdateMovieAsync(Movie movie);
+        Task UpdateMovieAsync(UpdateMovieDto model);
 
         Task DeleteMovieAsync(int id);
     }
