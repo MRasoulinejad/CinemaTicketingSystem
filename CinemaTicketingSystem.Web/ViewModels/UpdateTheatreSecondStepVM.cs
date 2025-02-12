@@ -10,5 +10,7 @@ namespace CinemaTicketingSystem.Web.ViewModels
         public string Description { get; set; }
         [ValidateNever]
         public IFormFile TheatreImage { get; set; }
+        [ValidateNever]
+        public string CurrentImage { get; set; }
     }
 }

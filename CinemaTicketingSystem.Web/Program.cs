@@ -37,6 +37,8 @@ builder.Services.AddTransient<IReCaptchaValidator, GoogleReCaptchaValidator>();
 builder.Services.AddTransient<ISmtpEmailService, SMTPEmailService>();
 
 builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<IHallService, HallService>();
+builder.Services.AddScoped<ITheatreService, TheatreService>();
 
 builder.Services.AddSingleton<IAppEnvironment, AppEnvironment>();
 
