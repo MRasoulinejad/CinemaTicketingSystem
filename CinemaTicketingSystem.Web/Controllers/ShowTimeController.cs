@@ -1,4 +1,6 @@
-﻿using CinemaTicketingSystem.Application.Common.Interfaces;
+﻿using CinemaTicketingSystem.Application.Common.DTO;
+using CinemaTicketingSystem.Application.Common.Interfaces;
+using CinemaTicketingSystem.Application.Services.Interfaces;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -12,61 +14,84 @@ namespace CinemaTicketingSystem.Web.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public ShowTimeController(IUnitOfWork unitOfWork)
+        private readonly IShowTimeService _showTimeService;
+
+        public ShowTimeController(IUnitOfWork unitOfWork, IShowTimeService showTimeService, ITheatreService theatreService, IMovieService movieService)
         {
             _unitOfWork = unitOfWork;
+            _showTimeService = showTimeService;
         }
 
-        public IActionResult ShowTimeManagement()
+        public async Task<IActionResult> ShowTimeManagement()
         {
-            var showTimes = _unitOfWork.ShowTimes.GetAll(includeProperties: "Theatre,Movie").ToList();
-            var showTimeCount = showTimes.Count;
-            var theatreCount = showTimes.Select(s => s.TheatreId).Distinct().Count();
-            var movieCount = showTimes.Select(s => s.MovieId).Distinct().Count();
-            var totalMinutes = showTimes.Sum(s => (s.ShowTimeEnd - s.ShowTimeStart).TotalMinutes);
+            //var showTimes = _unitOfWork.ShowTimes.GetAll(includeProperties: "Theatre,Movie").ToList();
+            //var showTimeCount = showTimes.Count();
+            //var theatreCount = showTimes.Select(s => s.TheatreId).Distinct().Count();
+            //var movieCount = showTimes.Select(s => s.MovieId).Distinct().Count();
+            //var totalMinutes = showTimes.Sum(s => (s.ShowTimeEnd - s.ShowTimeStart).TotalMinutes);
 
-            var model = new ShowTimeManagementVM
-            {
-                ShowTimes = showTimes,
-                TotalShowTimes = showTimeCount,
-                TotalTheatres = theatreCount,
-                TotalMovies = movieCount,
-                TotalMinutes = totalMinutes
-            };
+            //var model = new ShowTimeManagementVM
+            //{
+            //    ShowTimes = showTimes,
+            //    TotalShowTimes = showTimeCount,
+            //    TotalTheatres = theatreCount,
+            //    TotalMovies = movieCount,
+            //    TotalMinutes = totalMinutes
+            //};
 
-            return View(model);
+            //return View(model);
+
+            //var model = await _showTimeService.GetAllShowTimesAsync();
+
+            //var viewModel = new ShowTimeManagementVM
+            //{
+            //    ShowTimes = model.ShowTimes,
+            //    TotalShowTimes = model.TotalShowTimes,
+            //    TotalTheatres = model.TotalTheatres,
+            //    TotalMovies = model.TotalMovies,
+            //    TotalMinutes = model.TotalMinutes
+            //};
+
+            return View();
         }
 
         [HttpGet]
-        public IActionResult AddShowTime()
+        public async Task<IActionResult> AddShowTime()
         {
+            var data = await _showTimeService.GetAddShowTimeDataAsync();
+
             var model = new AddShowTimeVM
             {
-                Theatres = _unitOfWork.Theatres.GetAll().ToList(),
-                Movies = _unitOfWork.Movies.GetAll().ToList(),
+                Theatres = data.Theatres,
+                Movies = data.Movies
             };
             return View(model);
         }
 
         [HttpGet]
-        public IActionResult GetHallsByTheatre(int theatreId)
-        {
-            var halls = _unitOfWork.Halls
-                .GetAll(h => h.TheatreId == theatreId)
-                .Select(h => new { h.HallId, h.HallName })
-                .ToList();
+        public async Task<IActionResult> GetHallsByTheatre(int theatreId)
+        { 
+            //var halls = _unitOfWork.Halls
+            //    .GetAll(h => h.TheatreId == theatreId)
+            //    .Select(h => new { h.HallId, h.HallName })
+            //    .ToList();
+
+
+            var halls = await _showTimeService.GetHallsByTheatreAsync(theatreId);
 
             return Json(halls);
         }
 
 
         [HttpPost]
-        public IActionResult AddShowTime(AddShowTimeVM model)
+        public async Task<IActionResult> AddShowTime(AddShowTimeVM model)
         {
             if (!ModelState.IsValid)
             {
-                model.Theatres = _unitOfWork.Theatres.GetAll().ToList();
-                model.Movies = _unitOfWork.Movies.GetAll().ToList();
+                var data = await _showTimeService.GetAddShowTimeDataAsync();
+
+                model.Theatres = data.Theatres;
+                model.Movies = data.Movies;
                 return View(model);
             }
 
@@ -81,8 +106,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                 HallId = model.HallId,
             };
 
-            _unitOfWork.ShowTimes.Add(showTime);
-            _unitOfWork.Save();
+            await _showTimeService.AddShowTimeAsync(showTime);
 
             TempData["success"] = "Show Time added successfully!";
             return RedirectToAction("ShowTimeManagement");
@@ -92,58 +116,60 @@ namespace CinemaTicketingSystem.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> SearchShowTimes(string query, string filterBy)
         {
-
             // Validate input
             if (string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(filterBy))
             {
                 return BadRequest(new { message = "Query and filterBy are required." });
             }
 
-            List<int> relevantIds = new List<int>();
-
-            // Filter based on the criteria
-            switch (filterBy.ToLower())
-            {
-                case "movie":
-                    // Fetch relevant MovieIds
-                    relevantIds = _unitOfWork.Movies
-                        .GetAll()
-                        .Where(m => m.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
-                        .Select(m => m.MovieId)
-                        .ToList();
-                    break;
-
-                case "theatre":
-                    // Fetch relevant TheatreIds
-                    relevantIds = _unitOfWork.Theatres
-                        .GetAll()
-                        .Where(t => t.TheatreName.Contains(query, StringComparison.OrdinalIgnoreCase))
-                        .Select(t => t.TheatreId)
-                        .ToList();
-                    break;
-
-                default:
-                    return BadRequest(new { message = "Invalid filterBy value. Use 'movie' or 'theatre'." });
-            }
-
-            // Fetch ShowTimes based on the filtered IDs
-            var showTimes = filterBy.ToLower() == "movie"
-                ? _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.MovieId))
-                : _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.TheatreId));
+            var result = await _showTimeService.SearchShowTimesAsync(query, filterBy);
 
 
-            // Project the result
-            var result = showTimes.Select(s => new
-            {
-                s.ShowTimeId,
-                ShowDate = s.ShowDate.ToShortDateString(),
-                StartTime = s.ShowTimeStart.ToString(@"hh\:mm"),
-                EndTime = s.ShowTimeEnd.ToString(@"hh\:mm"),
-                Theatre = _unitOfWork.Theatres.GetAll().FirstOrDefault(t => t.TheatreId == s.TheatreId)?.TheatreName ?? "N/A",
-                Hall = _unitOfWork.Halls.GetAll().FirstOrDefault(h => h.HallId == s.HallId)?.HallName ?? "N/A",
-                Movie = _unitOfWork.Movies.GetAll().FirstOrDefault(t => t.MovieId == s.MovieId)?.Title ?? "N/A",
-                Price = s.Price
-            }).ToList();
+            //List<int> relevantIds = new List<int>();
+
+            //// Filter based on the criteria
+            //switch (filterBy.ToLower())
+            //{
+            //    case "movie":
+            //        // Fetch relevant MovieIds
+            //        relevantIds = _unitOfWork.Movies
+            //            .GetAll()
+            //            .Where(m => m.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
+            //            .Select(m => m.MovieId)
+            //            .ToList();
+            //        break;
+
+            //    case "theatre":
+            //        // Fetch relevant TheatreIds
+            //        relevantIds = _unitOfWork.Theatres
+            //            .GetAll()
+            //            .Where(t => t.TheatreName.Contains(query, StringComparison.OrdinalIgnoreCase))
+            //            .Select(t => t.TheatreId)
+            //            .ToList();
+            //        break;
+
+            //    default:
+            //        return BadRequest(new { message = "Invalid filterBy value. Use 'movie' or 'theatre'." });
+            //}
+
+            //// Fetch ShowTimes based on the filtered IDs
+            //var showTimes = filterBy.ToLower() == "movie"
+            //    ? _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.MovieId))
+            //    : _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.TheatreId));
+
+
+            //// Project the result
+            //var result = showTimes.Select(s => new
+            //{
+            //    s.ShowTimeId,
+            //    ShowDate = s.ShowDate.ToShortDateString(),
+            //    StartTime = s.ShowTimeStart.ToString(@"hh\:mm"),
+            //    EndTime = s.ShowTimeEnd.ToString(@"hh\:mm"),
+            //    Theatre = _unitOfWork.Theatres.GetAll().FirstOrDefault(t => t.TheatreId == s.TheatreId)?.TheatreName ?? "N/A",
+            //    Hall = _unitOfWork.Halls.GetAll().FirstOrDefault(h => h.HallId == s.HallId)?.HallName ?? "N/A",
+            //    Movie = _unitOfWork.Movies.GetAll().FirstOrDefault(t => t.MovieId == s.MovieId)?.Title ?? "N/A",
+            //    Price = s.Price
+            //}).ToList();
 
             return Json(result);
 
@@ -190,12 +216,14 @@ namespace CinemaTicketingSystem.Web.Controllers
 
 
         [HttpGet]
-        public IActionResult EditShowTime(int showTimeId)
+        public async Task<IActionResult> EditShowTime(int showTimeId)
         {
-            var showTime = _unitOfWork.ShowTimes.Get(s => s.ShowTimeId == showTimeId);
-            if (showTime == null) return NotFound();
+            var showTime = await _showTimeService.GetEditShowTimeDataAsync(showTimeId);
 
-            var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
+            //var showTime = _unitOfWork.ShowTimes.Get(s => s.ShowTimeId == showTimeId);
+            //if (showTime == null) return NotFound();
+
+            //var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
 
             var model = new EditShowTimeVM
             {
@@ -206,66 +234,103 @@ namespace CinemaTicketingSystem.Web.Controllers
                 TheatreId = showTime.TheatreId,
                 MovieId = showTime.MovieId,
                 Price = showTime.Price,
-                Theatres = _unitOfWork.Theatres.GetAll().ToList(),
-                Movies = _unitOfWork.Movies.GetAll().ToList(),
-                HallId = hall.HallId,
-                HallName = hall.HallName
+                Theatres = showTime.Theatres,
+                Movies = showTime.Movies,
+                HallId = showTime.HallId,
+                HallName = showTime.HallName
             };
 
             return View(model);
         }
 
+
         [HttpPost]
-        public IActionResult EditShowTime(EditShowTimeVM model)
+        public async Task<IActionResult> EditShowTime(EditShowTimeVM model)
         {
             if (!ModelState.IsValid)
             {
-                model.Theatres = _unitOfWork.Theatres.GetAll().ToList();
-                model.Movies = _unitOfWork.Movies.GetAll().ToList();
+                //model.Theatres = _unitOfWork.Theatres.GetAll().ToList();
+                //model.Movies = _unitOfWork.Movies.GetAll().ToList();
+                //return View(model);
+
+                var data = await _showTimeService.GetAddShowTimeDataAsync();
+
+                model.Theatres = data.Theatres;
+                model.Movies = data.Movies;
                 return View(model);
             }
 
-            var showTime = _unitOfWork.ShowTimes.Get(s => s.ShowTimeId == model.ShowTimeId);
-            if (showTime == null) return NotFound();
+            //var showTime = _unitOfWork.ShowTimes.Get(s => s.ShowTimeId == model.ShowTimeId);
+            //if (showTime == null) return NotFound();
 
-            showTime.ShowDate = model.ShowDate;
-            showTime.ShowTimeStart = model.ShowTimeStart;
-            showTime.ShowTimeEnd = model.ShowTimeEnd;
-            showTime.TheatreId = model.TheatreId;
-            showTime.HallId = model.HallId;
-            showTime.MovieId = model.MovieId;
-            showTime.Price = model.Price;
+            //showTime.ShowDate = model.ShowDate;
+            //showTime.ShowTimeStart = model.ShowTimeStart;
+            //showTime.ShowTimeEnd = model.ShowTimeEnd;
+            //showTime.TheatreId = model.TheatreId;
+            //showTime.HallId = model.HallId;
+            //showTime.MovieId = model.MovieId;
+            //showTime.Price = model.Price;
 
-            _unitOfWork.ShowTimes.Update(showTime);
-            _unitOfWork.Save();
+            //_unitOfWork.ShowTimes.Update(showTime);
+            //_unitOfWork.Save();
 
-            TempData["success"] = "Show Time updated successfully!";
-            return RedirectToAction("ShowTimeManagement");
+
+            try
+            {
+                await _showTimeService.UpdateShowTimeAsync(new UpdateShowTimeDto
+                {
+                    ShowTimeId = model.ShowTimeId,
+                    ShowDate = model.ShowDate,
+                    ShowTimeStart = model.ShowTimeStart,
+                    ShowTimeEnd = model.ShowTimeEnd,
+                    TheatreId = model.TheatreId,
+                    HallId = model.HallId,
+                    MovieId = model.MovieId,
+                    Price = model.Price
+                });
+
+                TempData["success"] = "Show Time updated successfully!";
+                return RedirectToAction("ShowTimeManagement");
+            }
+            catch (Exception ex)
+            {
+                TempData["error"] = ex.Message;
+                return RedirectToAction("ShowTimeManagement");
+            }
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteShowTime([FromBody]int showTimeId)
+        public async Task<IActionResult> DeleteShowTime([FromBody] int showTimeId)
         {
-            var showTime = _unitOfWork.ShowTimes.Get(s => s.ShowTimeId == showTimeId);
+            //var showTime = _unitOfWork.ShowTimes.Get(s => s.ShowTimeId == showTimeId);
 
-            if (showTime != null)
+            //if (showTime != null)
+            //{
+            //    try
+            //    {
+            //        _unitOfWork.ShowTimes.Remove(showTime);
+            //        _unitOfWork.Save();
+            //        return Json(new { success = true });
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        return Json(new { success = false, message = ex.Message });
+            //    }
+            //}
+            //return Json(new { success = false, message = "Show Time is Null!" });
+
+            var showTime = await _showTimeService.DeleteShowTimeAsync(showTimeId);
+
+            if (showTime)
             {
-                try
-                {
-                    _unitOfWork.ShowTimes.Remove(showTime);
-                    _unitOfWork.Save();
-
-
-                    return Json(new { success = true });
-                }
-                catch (Exception ex)
-                {
-                    return Json(new { success = false, message = ex.Message });
-                }
-
+                return Json(new { success = true });
             }
-            return Json(new { success = false, message = "Show Time is Null!" });
+            else
+            {
+                return Json(new { success = false, message = "Show Time is Null!" });
+            }
         }
     }
 }

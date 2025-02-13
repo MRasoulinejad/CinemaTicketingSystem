@@ -39,6 +39,7 @@ builder.Services.AddTransient<ISmtpEmailService, SMTPEmailService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IHallService, HallService>();
 builder.Services.AddScoped<ITheatreService, TheatreService>();
+builder.Services.AddScoped<IShowTimeService, ShowTimeService>();
 
 builder.Services.AddSingleton<IAppEnvironment, AppEnvironment>();
 
