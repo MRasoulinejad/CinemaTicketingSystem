@@ -76,9 +76,5 @@ namespace CinemaTicketingSystem.Infrastructure.Data
             });
         }
 
-
-
-
-
     }
 }

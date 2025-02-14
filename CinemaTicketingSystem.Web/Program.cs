@@ -9,6 +9,7 @@ using CinemaTicketingSystem.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
+using AccountService = CinemaTicketingSystem.Infrastructure.Services.AccountService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,8 +42,11 @@ builder.Services.AddScoped<IHallService, HallService>();
 builder.Services.AddScoped<ITheatreService, TheatreService>();
 builder.Services.AddScoped<IShowTimeService, ShowTimeService>();
 builder.Services.AddScoped<IHomeService, HomeService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 builder.Services.AddSingleton<IAppEnvironment, AppEnvironment>();
+
+
 
 var app = builder.Build();
 
