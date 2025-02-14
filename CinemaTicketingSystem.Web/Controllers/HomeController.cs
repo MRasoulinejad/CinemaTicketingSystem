@@ -1,3 +1,4 @@
+using CinemaTicketingSystem.Application.Common.DTO;
 using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.ExternalServices;
 using CinemaTicketingSystem.Application.Services.Interfaces;
@@ -18,40 +19,43 @@ namespace CinemaTicketingSystem.Web.Controllers
         private readonly IReCaptchaValidator _reCaptchaValidator;
         private readonly ISmtpEmailService _emailService;
         private readonly IMovieService _movieService;
+        private readonly IHomeService _homeService;
 
         public HomeController(IUnitOfWork unitOfWork, IConfiguration configuration,
-            IReCaptchaValidator reCaptchaValidator, ISmtpEmailService emailService, IMovieService movieService)
+            IReCaptchaValidator reCaptchaValidator, ISmtpEmailService emailService, IMovieService movieService, IHomeService homeService)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _reCaptchaValidator = reCaptchaValidator;
             _emailService = emailService;
             _movieService = movieService;
+            _homeService = homeService;
         }
 
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            // Take 3 Random Theatres
-            var theatres = _unitOfWork.Theatres.GetAll()
-                .OrderBy(x => Guid.NewGuid())
-                .Take(3)
-                .ToList();
 
+            // Get Data for Home Page
+            var HomeData = await _homeService.GetDataForIndexAsync();
 
-            // Take 9 Random Movies
-            var movies = _unitOfWork.Movies.GetAll()
-                .OrderBy(x => Guid.NewGuid())
-                .Take(9)
-                .ToList();
+            //// Take 3 Random Theatres
+            //var theatres = _unitOfWork.Theatres.GetAll()
+            //    .OrderBy(x => Guid.NewGuid())
+            //    .Take(3)
+            //    .ToList();
 
-
+            //// Take 9 Random Movies
+            //var movies = _unitOfWork.Movies.GetAll()
+            //    .OrderBy(x => Guid.NewGuid())
+            //    .Take(9)
+            //    .ToList();
 
             // Pass both to the View using a ViewModel
             var HomeVM = new HomeViewModel
             {
-                RandomTheatres = theatres,
-                LatestMovies = movies
+                RandomTheatres = HomeData.RandomTheatres,
+                LatestMovies = HomeData.LatestMovies
             };
 
             ViewData["HeroImageUrl"] = "/images/hero-banner.jpg";
@@ -62,7 +66,6 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         public IActionResult Privacy()
         {
-
             return View();
         }
 
@@ -87,6 +90,7 @@ namespace CinemaTicketingSystem.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Contact(ContactFormVM model)
         {
+
             string Response = Request.Form["g-recaptcha-response"];
 
             // Validate Google reCAPTCHA
@@ -104,11 +108,30 @@ namespace CinemaTicketingSystem.Web.Controllers
                 {
                     // Get the admin email from configuration
                     string adminEmail = _configuration["SMTP:AdminEmail"];
-                    string subject = $"Contact Form Submission: {model.Subject}";
-                    string body = $"Message from: {model.Name} ({model.Email})<br/><br/>{model.Message}";
-                    await _emailService.SendEmailAsync(adminEmail, subject, body);
-                    TempData["SuccessMessage"] = "Your message has been sent successfully!";
-                    return RedirectToAction("Contact");
+
+                    // Send Email
+                    bool result = await _homeService.SendContactEmailAsync(new ContactFormVmDto
+                    {
+                        Name = model.Name,
+                        Email = model.Email,
+                        Subject = model.Subject,
+                        Message = model.Message,
+                        AdminEmail = adminEmail
+                    });
+
+                    if (result)
+                    {
+                        //Success
+                        TempData["SuccessMessage"] = "Your message has been sent successfully!";
+                        return RedirectToAction("Contact");
+                    }
+                    else
+                    {
+                        //Error
+                        TempData["ErrorMessage"] = "An error occurred while sending your message. Please try again.";
+                        return RedirectToAction("Contact");
+                    }
+                    
                 }
                 catch (Exception ex)
                 {

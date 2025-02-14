@@ -19,28 +19,38 @@ namespace CinemaTicketingSystem.Infrastructure.Services
             _configuration = configuration;
         }
 
-        public async Task SendEmailAsync(string to, string subject, string body)
+        public async Task<bool> SendEmailAsync(string to, string subject, string body)
         {
-            // Retrieve SMTP settings from configuration (appsettings.json or environment variables)
-            var host = _configuration["SMTP:Host"];
-            var port = int.Parse(_configuration["SMTP:Port"]);
-            var userName = _configuration["SMTP:UserName"];
-            var password = _configuration["SMTP:Password"];
-            var from = _configuration["SMTP:From"];
-
-            using (var client = new SmtpClient(host, port))
+            try
             {
-                client.Credentials = new NetworkCredential(userName, password);
-                client.EnableSsl = true;
+                // Retrieve SMTP settings from configuration
+                var host = _configuration["SMTP:Host"];
+                var port = int.Parse(_configuration["SMTP:Port"]);
+                var userName = _configuration["SMTP:UserName"];
+                var password = _configuration["SMTP:Password"];
+                var from = _configuration["SMTP:From"];
 
-                var mailMessage = new MailMessage(from, to, subject, body)
+                using (var client = new SmtpClient(host, port))
                 {
-                    IsBodyHtml = true // if you're sending HTML emails
-                };
+                    client.Credentials = new NetworkCredential(userName, password);
+                    client.EnableSsl = true;
 
-                await client.SendMailAsync(mailMessage);
+                    var mailMessage = new MailMessage(from, to, subject, body)
+                    {
+                        IsBodyHtml = true // if sending HTML emails
+                    };
+
+                    await client.SendMailAsync(mailMessage);
+
+                    return true;
+                }
             }
-
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
+
+            
     }
 }
