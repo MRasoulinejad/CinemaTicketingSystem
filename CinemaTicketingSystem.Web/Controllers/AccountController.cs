@@ -1,6 +1,8 @@
 ﻿using CinemaTicketingSystem.Application.Common.Interfaces;
+using CinemaTicketingSystem.Application.ExternalServices;
 using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
+using CinemaTicketingSystem.Infrastructure.Services;
 using CinemaTicketingSystem.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -9,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using Newtonsoft.Json;
 using System.Data;
+using System.Text.Encodings.Web;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CinemaTicketingSystem.Web.Controllers
@@ -21,10 +24,12 @@ namespace CinemaTicketingSystem.Web.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ISmtpEmailService _smtpEmailService;
 
         public AccountController(IConfiguration configuration, IHttpClientFactory httpClientFactory,
             SignInManager<ApplicationUser> signInManager,
-            UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IUnitOfWork unitOfWork)
+            UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IUnitOfWork unitOfWork,
+            ISmtpEmailService smtpEmailService)
         {
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
@@ -32,6 +37,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
             _unitOfWork = unitOfWork;
+            _smtpEmailService = smtpEmailService;
         }
 
         public async Task<IActionResult> Login()
@@ -330,7 +336,7 @@ namespace CinemaTicketingSystem.Web.Controllers
         {
             var userName = User.Identity.Name;
 
-            if(userName == null) return RedirectToAction("Login","Account");
+            if (userName == null) return RedirectToAction("Login", "Account");
 
             var user = await _userManager.FindByNameAsync(userName);
 
@@ -350,6 +356,100 @@ namespace CinemaTicketingSystem.Web.Controllers
             };
 
             return View(model);
+        }
+
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError("", "No user found with the provided email address.");
+                return View();
+            }
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var callbackUrl = Url.Action("ResetPassword", "Account", new { email = user.Email, token = token },
+                protocol: HttpContext.Request.Scheme);
+
+
+            // Create email template
+            var emailBody = $@"
+            <h2>Reset Your Password</h2>
+            <p>To reset your password, please click the link below:</p>
+            <p><a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Reset Password</a></p>
+            <p>If you didn't request a password reset, please ignore this email.</p>";
+
+            // Send email with the reset link
+            await _smtpEmailService.SendEmailAsync(
+                model.Email,
+                "Password Reset Request",
+                emailBody);
+
+            return RedirectToAction(nameof(ForgotPasswordConfirmation));
+        }
+
+        [HttpGet]
+        public IActionResult ForgotPasswordConfirmation()
+        {
+            return View();
+        }
+
+        public IActionResult ResetPassword(string email, string token)
+        {
+            if (email == null || token == null)
+            {
+                ModelState.AddModelError("", "Invalid password reset token.");
+                return View();
+            }
+            var model = new ResetPasswordVM
+            {
+                Email = email,
+                Token = token
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError("", "No user found with the provided email address.");
+                return View();
+            }
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(ResetPasswordConfirmation));
+            }
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+            return View(model);
+        }
+
+    
+        public IActionResult ResetPasswordConfirmation()
+        {
+            return View();
         }
     }
 }
