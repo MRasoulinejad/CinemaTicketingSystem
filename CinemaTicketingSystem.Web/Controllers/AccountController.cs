@@ -21,27 +21,12 @@ namespace CinemaTicketingSystem.Web.Controllers
     public class AccountController : Controller
     {
         private readonly IConfiguration _configuration;
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ISmtpEmailService _smtpEmailService;
         private readonly IAccountService _accountService;
 
-        public AccountController(IConfiguration configuration, IHttpClientFactory httpClientFactory,
-            SignInManager<ApplicationUser> signInManager,
-            UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IUnitOfWork unitOfWork,
-            ISmtpEmailService smtpEmailService,
+        public AccountController(IConfiguration configuration,
             IAccountService accountService)
         {
             _configuration = configuration;
-            _httpClientFactory = httpClientFactory;
-            _signInManager = signInManager;
-            _userManager = userManager;
-            _roleManager = roleManager;
-            _unitOfWork = unitOfWork;
-            _smtpEmailService = smtpEmailService;
             _accountService = accountService;
         }
 
