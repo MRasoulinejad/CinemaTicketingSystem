@@ -284,69 +284,104 @@ namespace CinemaTicketingSystem.Web.Controllers
             //return View(model);
         }
 
-        public IActionResult ProceedBookingSeat(int showTimeId, int seatCount)
+        public async Task<IActionResult> ProceedBookingSeat(int showTimeId, int seatCount)
         {
 
-            // Fetch the ShowTime entity
-            var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
-            if (showTime == null)
+            //// Fetch the ShowTime entity
+            //var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
+            //if (showTime == null)
+            //{
+            //    return NotFound("ShowTime not found.");
+            //}
+
+            //// Fetch the Hall associated with the ShowTime
+            //var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
+            //if (hall == null)
+            //{
+            //    return NotFound("Hall not found.");
+            //}
+
+            //var now = DateTime.UtcNow;
+
+            //// Fetch all relevant temporary reservations for the given ShowTime within the last 5 minutes
+            //var temporaryReservations = _unitOfWork.TemporarySeatReservations.GetAll(r =>
+            //    r.ShowTimeId == showTimeId && r.ReservedAt > now.AddMinutes(-5)).ToList();
+
+            //// Fetch all confirmed and paid reservations for the given ShowTime
+            //var confirmedReservations = _unitOfWork.Reservations.GetAll(r =>
+            //    r.ShowTimeId == showTimeId && r.Status == "Confirmed" && r.PaymentStatus == "Paid").Select(r => r.SeatId).ToHashSet();
+
+            //// Fetch and group seats by sections
+            //var sectionInfo = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
+            //    .GroupBy(s => s.SectionName)
+            //    .Select(group => new
+            //    {
+            //        SectionName = group.Key,
+            //        SectionCount = group.Count()
+            //    }).ToList();
+
+            //// Fetch seat data, including temporary and confirmed reservation statuses
+            //var seats = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
+            //    .Select(s => new SeatVM
+            //    {
+            //        SeatId = s.SeatId,
+            //        SectionName = s.SectionName,
+            //        SeatNumber = s.SeatNumber,
+            //        IsReserved = confirmedReservations.Contains(s.SeatId), // Check against confirmed reservations
+            //        IsTemporaryReserved = temporaryReservations.Any(r => r.SeatId == s.SeatId) // Check against temporary reservations
+            //    }).ToList();
+
+            //// Populate the view model
+            //var model = new ProceedBookingSeatVM
+            //{
+            //    ShowTimeId = showTimeId,
+            //    SeatCount = seatCount,
+            //    HallName = hall.HallName,
+            //    Seats = seats,
+            //    Sections = sectionInfo.Select(s => new SectionVM
+            //    {
+            //        SectionName = s.SectionName,
+            //        SectionCount = s.SectionCount
+            //    }).ToList()
+            //};
+
+            //// Return the view with the model
+            //return View(model);
+
+
+            var model = await _reservationService.ProceedBookingSeatAsync(showTimeId, seatCount);
+
+            if (model == null)
+                return NotFound("ShowTime or Hall not found.");
+
+            // Convert `SeatDto` to `SeatVM`
+            var seatVMs = model.Seats.Select(s => new SeatVM
             {
-                return NotFound("ShowTime not found.");
-            }
+                SeatId = s.SeatId,
+                SectionName = s.SectionName,
+                SeatNumber = s.SeatNumber,
+                IsReserved = s.IsReserved,
+                IsTemporaryReserved = s.IsTemporaryReserved
+            }).ToList();
 
-            // Fetch the Hall associated with the ShowTime
-            var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
-            if (hall == null)
+            // Convert `SectionDto` to `SectionVM`
+            var sectionVMs = model.Sections.Select(s => new SectionVM
             {
-                return NotFound("Hall not found.");
-            }
+                SectionName = s.SectionName,
+                SectionCount = s.SectionCount
+            }).ToList();
 
-            var now = DateTime.UtcNow;
-
-            // Fetch all relevant temporary reservations for the given ShowTime within the last 5 minutes
-            var temporaryReservations = _unitOfWork.TemporarySeatReservations.GetAll(r =>
-                r.ShowTimeId == showTimeId && r.ReservedAt > now.AddMinutes(-5)).ToList();
-
-            // Fetch all confirmed and paid reservations for the given ShowTime
-            var confirmedReservations = _unitOfWork.Reservations.GetAll(r =>
-                r.ShowTimeId == showTimeId && r.Status == "Confirmed" && r.PaymentStatus == "Paid").Select(r => r.SeatId).ToHashSet();
-
-            // Fetch and group seats by sections
-            var sectionInfo = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
-                .GroupBy(s => s.SectionName)
-                .Select(group => new
-                {
-                    SectionName = group.Key,
-                    SectionCount = group.Count()
-                }).ToList();
-
-            // Fetch seat data, including temporary and confirmed reservation statuses
-            var seats = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
-                .Select(s => new SeatVM
-                {
-                    SeatId = s.SeatId,
-                    SectionName = s.SectionName,
-                    SeatNumber = s.SeatNumber,
-                    IsReserved = confirmedReservations.Contains(s.SeatId), // Check against confirmed reservations
-                    IsTemporaryReserved = temporaryReservations.Any(r => r.SeatId == s.SeatId) // Check against temporary reservations
-                }).ToList();
-
-            // Populate the view model
-            var model = new ProceedBookingSeatVM
+            var viewModel = new ProceedBookingSeatVM
             {
-                ShowTimeId = showTimeId,
-                SeatCount = seatCount,
-                HallName = hall.HallName,
-                Seats = seats,
-                Sections = sectionInfo.Select(s => new SectionVM
-                {
-                    SectionName = s.SectionName,
-                    SectionCount = s.SectionCount
-                }).ToList()
+                ShowTimeId = model.ShowTimeId,
+                SeatCount = model.SeatCount,
+                HallName = model.HallName,
+                Seats = seatVMs,
+                Sections = sectionVMs
             };
 
-            // Return the view with the model
-            return View(model);
+            return View(viewModel);
+
         }
 
         [HttpPost]

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CinemaTicketingSystem.Application.Services.Implementation
 {
@@ -98,9 +99,59 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
 
 
 
-        public async Task<ProceedBookingSeatDto> GetSeatDetailsAsync(int showTimeId, int seatCount)
+        public async Task<ProceedBookingSeatDto> ProceedBookingSeatAsync(int showTimeId, int seatCount)
         {
-            throw new NotImplementedException();
+            // Fetch the ShowTime entity
+            var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
+            if (showTime == null) return null;
+
+            // Fetch the Hall associated with the ShowTime
+            var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
+            if (hall == null) return null;
+
+            var now = DateTime.UtcNow;
+
+            // Fetch all relevant temporary reservations for the given ShowTime within the last 5 minutes
+            var temporaryReservations = _unitOfWork.TemporarySeatReservations.GetAll(r =>
+                r.ShowTimeId == showTimeId && r.ReservedAt > now.AddMinutes(-5)).ToList();
+
+            // Fetch all confirmed and paid reservations for the given ShowTime
+            var confirmedReservations = _unitOfWork.Reservations.GetAll(r =>
+                r.ShowTimeId == showTimeId && r.Status == "Confirmed" && r.PaymentStatus == "Paid").Select(r => r.SeatId).ToHashSet();
+
+            // Fetch and group seats by sections
+            var sectionInfo = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
+                .GroupBy(s => s.SectionName)
+                .Select(group => new
+                {
+                    SectionName = group.Key,
+                    SectionCount = group.Count()
+                }).ToList();
+
+            // Fetch seat data, including temporary and confirmed reservation statuses
+            var seats = _unitOfWork.Seats.GetAll(x => x.HallId == hall.HallId)
+                .Select(s => new SeatForProceedBookingDto
+                {
+                    SeatId = s.SeatId,
+                    SectionName = s.SectionName,
+                    SeatNumber = s.SeatNumber,
+                    IsReserved = confirmedReservations.Contains(s.SeatId), // Check against confirmed reservations
+                    IsTemporaryReserved = temporaryReservations.Any(r => r.SeatId == s.SeatId) // Check against temporary reservations
+                }).ToList();
+
+            // Populate the DTO
+            return new ProceedBookingSeatDto
+            {
+                ShowTimeId = showTimeId,
+                SeatCount = seatCount,
+                HallName = hall.HallName,
+                Seats = seats,
+                Sections = sectionInfo.Select(s => new SectionDto
+                {
+                    SectionName = s.SectionName,
+                    SectionCount = s.SectionCount
+                }).ToList()
+            };
         }
 
 

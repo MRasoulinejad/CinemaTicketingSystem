@@ -11,7 +11,7 @@ namespace CinemaTicketingSystem.Application.Common.DTO
         public int ShowTimeId { get; set; }
         public int SeatCount { get; set; }
         public string HallName { get; set; }
-        public List<SeatDto> Seats { get; set; }
+        public List<SeatForProceedBookingDto> Seats { get; set; }
         public List<SectionDto> Sections { get; set; }
     }
 }
