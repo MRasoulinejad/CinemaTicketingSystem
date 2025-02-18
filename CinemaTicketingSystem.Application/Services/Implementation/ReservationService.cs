@@ -43,9 +43,67 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
 
         }
 
-        public async Task<string> ConfirmCheckoutAsync(ConfirmCheckoutDto model, string userName)
+        public async Task<ConfirmCheckoutResultDto> ConfirmCheckoutAsync(ConfirmCheckoutDto model, string userName)
         {
-            throw new NotImplementedException();
+            try
+            {
+                // Validate input
+                if (model == null || model.SelectedSeatIds == null || !model.SelectedSeatIds.Any())
+                {
+                    return new ConfirmCheckoutResultDto { Success = false, Message = "Invalid input. Please select at least one seat." };
+                }
+
+                // Get the current user from Identity
+                var user = await _userManager.FindByNameAsync(userName);
+                if (user == null)
+                {
+                    return new ConfirmCheckoutResultDto { Success = false, Message = "User not authenticated." };
+                }
+
+                // Get current time
+                var now = DateTime.UtcNow;
+
+                // Check if any selected seat is already reserved
+                var reservedSeats = _unitOfWork.TemporarySeatReservations.GetAll(r =>
+                    r.ShowTimeId == model.ShowTimeId &&
+                    model.SelectedSeatIds.Contains(r.SeatId) &&
+                    r.ReservedAt > now.AddMinutes(-5));
+
+                if (reservedSeats.Any())
+                {
+                    return new ConfirmCheckoutResultDto { Success = false, Message = "Some selected seats are already reserved." };
+                }
+
+                // Temporarily reserve the seats
+                foreach (var seatId in model.SelectedSeatIds)
+                {
+                    var reservation = new TemporarySeatReservation
+                    {
+                        ShowTimeId = model.ShowTimeId,
+                        SeatId = seatId,
+                        UserId = user.Id,
+                        ReservedAt = now
+                    };
+
+                    _unitOfWork.TemporarySeatReservations.Add(reservation);
+                }
+
+                // Save changes
+                _unitOfWork.Save();
+
+                // Return success response
+                return new ConfirmCheckoutResultDto { Success = true, Message = "Seats reserved successfully." };
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if required
+                Console.WriteLine($"Error: {ex.Message}");
+                return new ConfirmCheckoutResultDto { Success = false, Message = "An error occurred while reserving seats. Please try again." };
+            }
+
+
+
+
         }
 
         public async Task<string> FinalizeBookingAsync(FinalizeBookingDto model, string domain)
