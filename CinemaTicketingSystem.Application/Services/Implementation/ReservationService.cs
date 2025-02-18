@@ -111,9 +111,65 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
             throw new NotImplementedException();
         }
 
-        public async Task<CheckoutConfirmationDto> GetCheckoutDetailsAsync(int showTimeId, string selectedSeats, string userName)
+        public async Task<CheckoutConfirmationDto> CheckoutConfirmationAsync(int showTimeId, string selectedSeats, string userName)
         {
-            throw new NotImplementedException();
+            // Fetch authenticated user
+            if (string.IsNullOrEmpty(userName))
+            {
+                return null; // Unauthorized scenario
+            }
+
+            var user = await _userManager.FindByNameAsync(userName);
+            var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
+
+            var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
+            if (showTime == null)
+            {
+                return null; // ShowTime not found
+            }
+
+            var movie = _unitOfWork.Movies.Get(x => x.MovieId == showTime.MovieId);
+            var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == showTime.TheatreId);
+            var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
+
+            var seatNumbers = _unitOfWork.Seats.GetAll(x => seatIds.Contains(x.SeatId))
+                .Select(s => $"{s.SectionName} {s.SeatNumber}")
+                .ToList();
+
+            var totalPrice = showTime.Price * seatIds.Count;
+
+            // Fetch the earliest reservation time for the selected seats
+            var reservedAt = _unitOfWork.TemporarySeatReservations
+                .GetAll(r => r.UserId == user.Id && seatIds.Contains(r.SeatId) && r.ShowTimeId == showTimeId)
+                .OrderBy(r => r.ReservedAt)
+                .Select(r => r.ReservedAt)
+                .FirstOrDefault();
+
+            if (reservedAt == default)
+            {
+                return null; // Reservation not found or expired
+            }
+
+            return new CheckoutConfirmationDto
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber,
+                UserEmail = user.Email,
+                ShowTimeId = showTimeId,
+                MovieTitle = movie.Title,
+                PosterUrl = movie.Poster,
+                TheatreName = theatre.TheatreName,
+                Genre = movie.Genre,
+                Duration = movie.Duration,
+                HallName = hall.HallName,
+                ShowDate = showTime.ShowDate.ToString("MMMM dd, yyyy"),
+                ShowTime = $"{showTime.ShowTimeStart} - {showTime.ShowTimeEnd}",
+                SelectedSeatNumbers = seatNumbers,
+                TotalPrice = totalPrice,
+                ReservedAt = reservedAt,
+                SelectedSeatIds = seatIds
+            };
         }
 
         public async Task<List<FilteredShowTimeDto>> GetFilteredShowTimesAsync(ReservationFilterDto filter)

@@ -19,7 +19,8 @@ namespace CinemaTicketingSystem.Application.Services.Interfaces
 
         Task<ConfirmCheckoutResultDto> ConfirmCheckoutAsync(ConfirmCheckoutDto model, string userName);
 
-        Task<CheckoutConfirmationDto> GetCheckoutDetailsAsync(int showTimeId, string selectedSeats, string userName);
+        Task<CheckoutConfirmationDto> CheckoutConfirmationAsync(int showTimeId, string selectedSeats, string userName);
+
         Task<string> FinalizeBookingAsync(FinalizeBookingDto model, string domain);
         Task<string> HandlePaymentSuccessAsync(string sessionId, string userName);
         Task<string> HandlePaymentFailedAsync(string sessionId, string userName);

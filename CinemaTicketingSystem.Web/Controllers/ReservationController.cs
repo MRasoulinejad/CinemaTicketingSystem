@@ -472,65 +472,100 @@ namespace CinemaTicketingSystem.Web.Controllers
         public async Task<IActionResult> CheckoutConfirmation(int showTimeId, string selectedSeats)
         {
 
-            var userName = User.Identity.Name; // Fetch authenticated user
+            //var userName = User.Identity.Name; // Fetch authenticated user
+            //if (string.IsNullOrEmpty(userName))
+            //{
+            //    return Unauthorized("User not authenticated.");
+            //}
+
+            //var user = await _userManager.FindByNameAsync(userName);
+            //var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
+
+            //var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
+            //if (showTime == null)
+            //{
+            //    return NotFound("ShowTime not found.");
+            //}
+
+            //var movie = _unitOfWork.Movies.Get(x => x.MovieId == showTime.MovieId);
+            //var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == showTime.TheatreId);
+            //var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
+
+            //var seatNumbers = _unitOfWork.Seats.GetAll(x => seatIds.Contains(x.SeatId))
+            //    .Select(s => $"{s.SectionName} {s.SeatNumber}")
+            //    .ToList();
+
+            //var totalPrice = showTime.Price * seatIds.Count;
+
+            //// Fetch the earliest reservation time for the selected seats
+            //var reservedAt = _unitOfWork.TemporarySeatReservations
+            //    .GetAll(r => r.UserId == user.Id && seatIds.Contains(r.SeatId) && r.ShowTimeId == showTimeId)
+            //    .OrderBy(r => r.ReservedAt)
+            //    .Select(r => r.ReservedAt)
+            //    .FirstOrDefault();
+
+            //if (reservedAt == default)
+            //{
+            //    return BadRequest("Reservation not found or expired.");
+            //}
+
+            //var model = new CheckoutConfirmationVM
+            //{
+            //    FirstName = user.FirstName,
+            //    LastName = user.LastName,
+            //    PhoneNumber = user.PhoneNumber,
+            //    UserEmail = user.Email,
+            //    ShowTimeId = showTimeId,
+            //    MovieTitle = movie.Title,
+            //    PosterUrl = movie.Poster,
+            //    TheatreName = theatre.TheatreName,
+            //    Genre = movie.Genre,
+            //    Duration = movie.Duration,
+            //    HallName = hall.HallName,
+            //    ShowDate = showTime.ShowDate.ToString("MMMM dd, yyyy"),
+            //    ShowTime = $"{showTime.ShowTimeStart} - {showTime.ShowTimeEnd}",
+            //    SelectedSeatNumbers = seatNumbers,
+            //    TotalPrice = totalPrice,
+            //    ReservedAt = reservedAt, // Pass the reservation time to the view
+            //    SelectedSeatIds = seatIds,
+            //};
+
+            //return View(model);
+
+            var userName = User.Identity?.Name;
             if (string.IsNullOrEmpty(userName))
             {
                 return Unauthorized("User not authenticated.");
             }
 
-            var user = await _userManager.FindByNameAsync(userName);
-            var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
+            var model = await _reservationService.CheckoutConfirmationAsync(showTimeId, selectedSeats, userName);
 
-            var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
-            if (showTime == null)
+            if (model == null)
+                return NotFound("ShowTime not found or reservation expired.");
+
+            var viewModel = new CheckoutConfirmationVM
             {
-                return NotFound("ShowTime not found.");
-            }
-
-            var movie = _unitOfWork.Movies.Get(x => x.MovieId == showTime.MovieId);
-            var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == showTime.TheatreId);
-            var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
-
-            var seatNumbers = _unitOfWork.Seats.GetAll(x => seatIds.Contains(x.SeatId))
-                .Select(s => $"{s.SectionName} {s.SeatNumber}")
-                .ToList();
-
-            var totalPrice = showTime.Price * seatIds.Count;
-
-            // Fetch the earliest reservation time for the selected seats
-            var reservedAt = _unitOfWork.TemporarySeatReservations
-                .GetAll(r => r.UserId == user.Id && seatIds.Contains(r.SeatId) && r.ShowTimeId == showTimeId)
-                .OrderBy(r => r.ReservedAt)
-                .Select(r => r.ReservedAt)
-                .FirstOrDefault();
-
-            if (reservedAt == default)
-            {
-                return BadRequest("Reservation not found or expired.");
-            }
-
-            var model = new CheckoutConfirmationVM
-            {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                PhoneNumber = user.PhoneNumber,
-                UserEmail = user.Email,
-                ShowTimeId = showTimeId,
-                MovieTitle = movie.Title,
-                PosterUrl = movie.Poster,
-                TheatreName = theatre.TheatreName,
-                Genre = movie.Genre,
-                Duration = movie.Duration,
-                HallName = hall.HallName,
-                ShowDate = showTime.ShowDate.ToString("MMMM dd, yyyy"),
-                ShowTime = $"{showTime.ShowTimeStart} - {showTime.ShowTimeEnd}",
-                SelectedSeatNumbers = seatNumbers,
-                TotalPrice = totalPrice,
-                ReservedAt = reservedAt, // Pass the reservation time to the view
-                SelectedSeatIds = seatIds,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                PhoneNumber = model.PhoneNumber,
+                UserEmail = model.UserEmail,
+                ShowTimeId = model.ShowTimeId,
+                MovieTitle = model.MovieTitle,
+                PosterUrl = model.PosterUrl,
+                TheatreName = model.TheatreName,
+                Genre = model.Genre,
+                Duration = model.Duration,
+                HallName = model.HallName,
+                ShowDate = model.ShowDate,
+                ShowTime = model.ShowTime,
+                SelectedSeatNumbers = model.SelectedSeatNumbers,
+                TotalPrice = model.TotalPrice,
+                ReservedAt = model.ReservedAt,
+                SelectedSeatIds = model.SelectedSeatIds
             };
 
-            return View(model);
+            return View(viewModel);
+
         }
 
         [ValidateAntiForgeryToken]
