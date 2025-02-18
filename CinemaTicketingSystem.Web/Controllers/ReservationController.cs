@@ -250,22 +250,38 @@ namespace CinemaTicketingSystem.Web.Controllers
         }
 
 
-        public IActionResult BookShowTime(int showTimeId)
+        public async Task<IActionResult> BookShowTime(int showTimeId)
         {
-            var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
-            var movie = _unitOfWork.Movies.Get(x => x.MovieId == showTime.MovieId);
-            var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
-            var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == showTime.TheatreId);
+            //var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
+            //var movie = _unitOfWork.Movies.Get(x => x.MovieId == showTime.MovieId);
+            //var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
+            //var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == showTime.TheatreId);
 
-            BookShowTimeVM model = new BookShowTimeVM
+            var model = await _reservationService.BookShowTimeAsync(showTimeId);
+
+            if (model == null)
+                return NotFound("ShowTime not found.");
+
+            BookShowTimeVM viewModel = new BookShowTimeVM
             {
-                ShowTime = showTime,
-                Movie = movie,
-                Hall = hall,
-                Theatre = theatre
+                ShowTime = model.ShowTime,
+                Movie = model.Movie,
+                Hall = model.Hall,
+                Theatre = model.Theatre
             };
 
-            return View(model);
+            return View(viewModel);
+
+
+            //BookShowTimeVM model = new BookShowTimeVM
+            //{
+            //    ShowTime = showTime,
+            //    Movie = movie,
+            //    Hall = hall,
+            //    Theatre = theatre
+            //};
+
+            //return View(model);
         }
 
         public IActionResult ProceedBookingSeat(int showTimeId, int seatCount)

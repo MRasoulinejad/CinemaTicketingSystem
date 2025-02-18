@@ -23,6 +23,25 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
             _userManager = userManager;
         }
 
+        public async Task<BookShowTimeDto> BookShowTimeAsync(int showTimeId)
+        {
+            var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
+            if (showTime == null) return null;
+
+            var movie = _unitOfWork.Movies.Get(x => x.MovieId == showTime.MovieId);
+            var hall = _unitOfWork.Halls.Get(x => x.HallId == showTime.HallId);
+            var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == showTime.TheatreId);
+
+            return new BookShowTimeDto
+            {
+                ShowTime = showTime,
+                Movie = movie,
+                Hall = hall,
+                Theatre = theatre
+            };
+
+        }
+
         public async Task<string> ConfirmCheckoutAsync(ConfirmCheckoutDto model, string userName)
         {
             throw new NotImplementedException();
