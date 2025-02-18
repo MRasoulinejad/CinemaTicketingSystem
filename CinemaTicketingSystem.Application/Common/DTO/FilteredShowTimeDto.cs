@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace CinemaTicketingSystem.Application.Common.DTO
 {
-    public class ReservationFilterDto
+    public class FilteredShowTimeDto
     {
-        public int? MovieId { get; set; }
-        public int? TheatreId { get; set; }
-        public DateOnly ShowDate { get; set; }
+        public int ShowTimeId { get; set; }
         public string MovieTitle { get; set; }
         public string TheatreName { get; set; }
+        public string StartTime { get; set; }
+        public string EndTime { get; set; }
+        public decimal Price { get; set; }
     }
 }

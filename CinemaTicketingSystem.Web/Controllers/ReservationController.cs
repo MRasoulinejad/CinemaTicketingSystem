@@ -1,4 +1,5 @@
-﻿using CinemaTicketingSystem.Application.Common.Interfaces;
+﻿using CinemaTicketingSystem.Application.Common.DTO;
+using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.Services.Interfaces;
 using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
@@ -205,30 +206,45 @@ namespace CinemaTicketingSystem.Web.Controllers
 
             var data = _reservationService.GetMoviesAndTheatresAsync();
 
-            return Json(new { success = true, data });
+            var result = new
+            {
+                movies = data.Result.Movies,
+                theatres = data.Result.Theatres
+            };
+
+            return Json(new { success = true, result.movies, result.theatres });
         }
 
         [HttpPost]
-        public IActionResult GetFilteredShowTimes([FromBody] ReservationViewModel model)
+        public async Task<IActionResult> GetFilteredShowTimes([FromBody] ReservationViewModel filter)
         {
-            var query = _unitOfWork.ShowTimes.GetAll(includeProperties: "Movie,Theatre")
-                .Where(st => st.ShowDate == model.ShowDate);
+            //var query = _unitOfWork.ShowTimes.GetAll(includeProperties: "Movie,Theatre")
+            //    .Where(st => st.ShowDate == model.ShowDate);
 
-            if (model.MovieId.HasValue)
-                query = query.Where(st => st.MovieId == model.MovieId.Value);
+            //if (model.MovieId.HasValue)
+            //    query = query.Where(st => st.MovieId == model.MovieId.Value);
 
-            if (model.TheatreId.HasValue)
-                query = query.Where(st => st.TheatreId == model.TheatreId.Value);
+            //if (model.TheatreId.HasValue)
+            //    query = query.Where(st => st.TheatreId == model.TheatreId.Value);
 
-            var showTimes = query.Select(st => new
+            //var showTimes = query.Select(st => new
+            //{
+            //    showTimeId = st.ShowTimeId,
+            //    movieTitle = st.Movie.Title,
+            //    theatreName = st.Theatre.TheatreName,
+            //    startTime = st.ShowTimeStart.ToString(@"hh\:mm"),
+            //    endTime = st.ShowTimeEnd.ToString(@"hh\:mm"),
+            //    price = st.Price
+            //}).ToList();
+
+            var ReservationFilterDto = new ReservationFilterDto
             {
-                showTimeId = st.ShowTimeId,
-                movieTitle = st.Movie.Title,
-                theatreName = st.Theatre.TheatreName,
-                startTime = st.ShowTimeStart.ToString(@"hh\:mm"),
-                endTime = st.ShowTimeEnd.ToString(@"hh\:mm"),
-                price = st.Price
-            }).ToList();
+                ShowDate = filter.ShowDate,
+                MovieId = filter.MovieId,
+                TheatreId = filter.TheatreId
+            };
+
+            var showTimes = await _reservationService.GetFilteredShowTimesAsync(ReservationFilterDto);
 
             return Json(showTimes);
         }

@@ -38,9 +38,26 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
             throw new NotImplementedException();
         }
 
-        public async Task<List<ShowTimeDto>> GetFilteredShowTimesAsync(ReservationFilterDto model)
+        public async Task<List<FilteredShowTimeDto>> GetFilteredShowTimesAsync(ReservationFilterDto filter)
         {
-            throw new NotImplementedException();
+            var query = _unitOfWork.ShowTimes.GetAll(includeProperties: "Movie,Theatre")
+                        .Where(st => st.ShowDate == filter.ShowDate);
+
+            if (filter.MovieId.HasValue)
+                query = query.Where(st => st.MovieId == filter.MovieId.Value);
+
+            if (filter.TheatreId.HasValue)
+                query = query.Where(st => st.TheatreId == filter.TheatreId.Value);
+
+            return query.Select(st => new FilteredShowTimeDto
+            {
+                ShowTimeId = st.ShowTimeId,
+                MovieTitle = st.Movie.Title,
+                TheatreName = st.Theatre.TheatreName,
+                StartTime = st.ShowTimeStart.ToString(@"hh\:mm"),
+                EndTime = st.ShowTimeEnd.ToString(@"hh\:mm"),
+                Price = st.Price
+            }).ToList();
         }
 
         public async Task<MoviesAndTheatresDto> GetMoviesAndTheatresAsync()
@@ -60,20 +77,14 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
             };
         }
 
-        public async Task<List<MovieDto>> GetMoviesAsync()
-        {
-            throw new NotImplementedException();
-        }
+
 
         public async Task<ProceedBookingSeatDto> GetSeatDetailsAsync(int showTimeId, int seatCount)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<List<TheatreDto>> GetTheatresAsync()
-        {
-            throw new NotImplementedException();
-        }
+
 
         public async Task<string> HandlePaymentFailedAsync(string sessionId, string userName)
         {

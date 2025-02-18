@@ -11,11 +11,9 @@ namespace CinemaTicketingSystem.Application.Services.Interfaces
     {
         Task<List<ShowTimeSearchForResDto>> SearchReservationByShowTimeAsync(string query, string filterBy);
         Task<List<ReservationSearchDto>> SearchReservationByUserOrTicketAsync(string query, string filterBy);
-        Task<List<MovieDto>> GetMoviesAsync();
-        Task<List<TheatreDto>> GetTheatresAsync();
         Task<MoviesAndTheatresDto> GetMoviesAndTheatresAsync();
 
-        Task<List<ShowTimeDto>> GetFilteredShowTimesAsync(ReservationFilterDto model);
+        Task<List<FilteredShowTimeDto>> GetFilteredShowTimesAsync(ReservationFilterDto model);
         Task<ProceedBookingSeatDto> GetSeatDetailsAsync(int showTimeId, int seatCount);
         Task<string> ConfirmCheckoutAsync(ConfirmCheckoutDto model, string userName);
         Task<CheckoutConfirmationDto> GetCheckoutDetailsAsync(int showTimeId, string selectedSeats, string userName);
