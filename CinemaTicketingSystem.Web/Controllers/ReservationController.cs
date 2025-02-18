@@ -1,4 +1,5 @@
 ﻿using CinemaTicketingSystem.Application.Common.Interfaces;
+using CinemaTicketingSystem.Application.Services.Interfaces;
 using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Web.ViewModels;
@@ -18,11 +19,15 @@ namespace CinemaTicketingSystem.Web.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IReservationService _reservationService;
 
-        public ReservationController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+        public ReservationController(IUnitOfWork unitOfWork,
+            UserManager<ApplicationUser> userManager,
+            IReservationService reservationService)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
+            _reservationService = reservationService;
         }
 
         [HttpGet]
@@ -30,138 +35,147 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         public async Task<IActionResult> SearchReservationByShowTime(string query, string filterBy)
         {
-            // Validate input
-            if (string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(filterBy))
-            {
-                return BadRequest(new { message = "Query and filterBy are required." });
-            }
+            //// Validate input
+            //if (string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(filterBy))
+            //{
+            //    return BadRequest(new { message = "Query and filterBy are required." });
+            //}
 
-            List<int> relevantIds = new List<int>();
+            //List<int> relevantIds = new List<int>();
 
-            // Filter based on the criteria
-            switch (filterBy.ToLower())
-            {
-                case "movie":
-                    // Fetch relevant MovieIds
-                    relevantIds = _unitOfWork.Movies
-                        .GetAll()
-                        .Where(m => m.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
-                        .Select(m => m.MovieId)
-                        .ToList();
-                    break;
+            //// Filter based on the criteria
+            //switch (filterBy.ToLower())
+            //{
+            //    case "movie":
+            //        // Fetch relevant MovieIds
+            //        relevantIds = _unitOfWork.Movies
+            //            .GetAll()
+            //            .Where(m => m.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
+            //            .Select(m => m.MovieId)
+            //            .ToList();
+            //        break;
 
-                case "theatre":
-                    // Fetch relevant TheatreIds
-                    relevantIds = _unitOfWork.Theatres
-                        .GetAll()
-                        .Where(t => t.TheatreName.Contains(query, StringComparison.OrdinalIgnoreCase))
-                        .Select(t => t.TheatreId)
-                        .ToList();
-                    break;
+            //    case "theatre":
+            //        // Fetch relevant TheatreIds
+            //        relevantIds = _unitOfWork.Theatres
+            //            .GetAll()
+            //            .Where(t => t.TheatreName.Contains(query, StringComparison.OrdinalIgnoreCase))
+            //            .Select(t => t.TheatreId)
+            //            .ToList();
+            //        break;
 
-                default:
-                    return BadRequest(new { message = "Invalid filterBy value. Use 'movie' or 'theatre'." });
-            }
+            //    default:
+            //        return BadRequest(new { message = "Invalid filterBy value. Use 'movie' or 'theatre'." });
+            //}
 
-            // Fetch ShowTimes based on the filtered IDs
-            var showTimes = filterBy.ToLower() == "movie"
-                ? _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.MovieId))
-                : _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.TheatreId));
-
-
-            // Project the result
-            var result = showTimes.Select(s => new
-            {
-                s.ShowTimeId,
-                ShowDate = s.ShowDate.ToShortDateString(),
-                StartTime = s.ShowTimeStart.ToString(@"hh\:mm"),
-                EndTime = s.ShowTimeEnd.ToString(@"hh\:mm"),
-                Theatre = _unitOfWork.Theatres.GetAll().FirstOrDefault(t => t.TheatreId == s.TheatreId)?.TheatreName ?? "N/A",
-                Hall = _unitOfWork.Halls.GetAll().FirstOrDefault(h => h.HallId == s.HallId)?.HallName ?? "N/A",
-                Movie = _unitOfWork.Movies.GetAll().FirstOrDefault(t => t.MovieId == s.MovieId)?.Title ?? "N/A",
-                Price = s.Price,
-                TotalSeats = _unitOfWork.Seats.GetAll().Count(seat => seat.HallId == s.HallId),
-                ReservedSeats = _unitOfWork.Reservations.GetAll().Count(r => r.ShowTimeId == s.ShowTimeId && r.PaymentStatus == SD.PaymentStatus_Paid)
-            }).ToList();
+            //// Fetch ShowTimes based on the filtered IDs
+            //var showTimes = filterBy.ToLower() == "movie"
+            //    ? _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.MovieId))
+            //    : _unitOfWork.ShowTimes.GetAll().Where(s => relevantIds.Contains(s.TheatreId));
 
 
+            //// Project the result
+            //var result = showTimes.Select(s => new
+            //{
+            //    s.ShowTimeId,
+            //    ShowDate = s.ShowDate.ToShortDateString(),
+            //    StartTime = s.ShowTimeStart.ToString(@"hh\:mm"),
+            //    EndTime = s.ShowTimeEnd.ToString(@"hh\:mm"),
+            //    Theatre = _unitOfWork.Theatres.GetAll().FirstOrDefault(t => t.TheatreId == s.TheatreId)?.TheatreName ?? "N/A",
+            //    Hall = _unitOfWork.Halls.GetAll().FirstOrDefault(h => h.HallId == s.HallId)?.HallName ?? "N/A",
+            //    Movie = _unitOfWork.Movies.GetAll().FirstOrDefault(t => t.MovieId == s.MovieId)?.Title ?? "N/A",
+            //    Price = s.Price,
+            //    TotalSeats = _unitOfWork.Seats.GetAll().Count(seat => seat.HallId == s.HallId),
+            //    ReservedSeats = _unitOfWork.Reservations.GetAll().Count(r => r.ShowTimeId == s.ShowTimeId && r.PaymentStatus == SD.PaymentStatus_Paid)
+            //}).ToList();
+
+
+            //return Json(result);
+
+
+            var result = await _reservationService.SearchReservationByShowTimeAsync(query, filterBy);
             return Json(result);
+
+
         }
 
         public async Task<IActionResult> SearchReservationByUserOrTicket(string query, string filterBy)
         {
-            // Validate input
-            if (string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(filterBy))
-            {
-                return BadRequest(new { message = "Query and filterBy are required." });
-            }
+            //// Validate input
+            //if (string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(filterBy))
+            //{
+            //    return BadRequest(new { message = "Query and filterBy are required." });
+            //}
 
-            ApplicationUser user = null;
-            int ticketId = 0;
+            //ApplicationUser user = null;
+            //int ticketId = 0;
 
-            switch (filterBy.ToLower())
-            {
-                case "user":
-                    // Fetch reservations by user
-                    user = _userManager.Users.FirstOrDefault(u => u.Email == query.ToLower());
-                    if (user == null)
-                    {
-                        return NotFound(new { message = "User not found." });
-                    }
-                    break;
+            //switch (filterBy.ToLower())
+            //{
+            //    case "user":
+            //        // Fetch reservations by user
+            //        user = _userManager.Users.FirstOrDefault(u => u.Email == query.ToLower());
+            //        if (user == null)
+            //        {
+            //            return NotFound(new { message = "User not found." });
+            //        }
+            //        break;
 
-                case "ticket":
+            //    case "ticket":
 
-                    if (query.Contains("@"))
-                    {
-                        return BadRequest(new { message = "For ticket search, please enter the ticket number, not an email address." });
-                    }
+            //        if (query.Contains("@"))
+            //        {
+            //            return BadRequest(new { message = "For ticket search, please enter the ticket number, not an email address." });
+            //        }
 
-                    // Attempt to parse the input into an integer
-                    if (!int.TryParse(query, out ticketId))
-                    {
-                        return BadRequest(new { message = "The ticket input must be a valid number." });
-                    }
+            //        // Attempt to parse the input into an integer
+            //        if (!int.TryParse(query, out ticketId))
+            //        {
+            //            return BadRequest(new { message = "The ticket input must be a valid number." });
+            //        }
 
-                    // Search for the reservation by ticket ID
-                    var reservation = _unitOfWork.Reservations.Get(r => r.ReservationId == ticketId);
-                    if (reservation == null)
-                    {
-                        return NotFound(new { message = "Ticket not found." });
-                    }
+            //        // Search for the reservation by ticket ID
+            //        var reservation = _unitOfWork.Reservations.Get(r => r.ReservationId == ticketId);
+            //        if (reservation == null)
+            //        {
+            //            return NotFound(new { message = "Ticket not found." });
+            //        }
 
-                    // Retrieve the user associated with the reservation
-                    user = _userManager.Users.FirstOrDefault(u => u.Id == reservation.UserId);
+            //        // Retrieve the user associated with the reservation
+            //        user = _userManager.Users.FirstOrDefault(u => u.Id == reservation.UserId);
 
-                    break;
+            //        break;
 
-                default:
-                    return BadRequest(new { message = "Invalid query value. Use 'user' or 'ticket'." });
-            }
+            //    default:
+            //        return BadRequest(new { message = "Invalid query value. Use 'user' or 'ticket'." });
+            //}
 
-            // Fetch reservations based on the user or ticket ID
-            var reservations = filterBy.ToLower() == "user"
-                ? _unitOfWork.Reservations.GetAll(r => r.UserId == user.Id, 
-                includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat")
-                : _unitOfWork.Reservations.GetAll(r => r.ReservationId == ticketId,
-                includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat");
+            //// Fetch reservations based on the user or ticket ID
+            //var reservations = filterBy.ToLower() == "user"
+            //    ? _unitOfWork.Reservations.GetAll(r => r.UserId == user.Id, 
+            //    includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat")
+            //    : _unitOfWork.Reservations.GetAll(r => r.ReservationId == ticketId,
+            //    includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat");
 
-            // Project the result
-            var result = reservations
-                .OrderByDescending(r => r.ReservationId)
-                .Select(r => new
-            {
-                TicketNumber = r.ReservationId,
-                UserEmail = user.Email,
-                Movie = r.ShowTime.Movie.Title,
-                Theatre = r.ShowTime.Theatre.TheatreName,
-                Hall = _unitOfWork.Halls.Get(h => h.HallId == r.ShowTime.HallId).HallName,
-                ShowDate = r.ShowTime.ShowDate.ToShortDateString(),
-                SeatNumber = $"{r.Seat.SectionName} {r.Seat.SeatNumber}",
-                Status = r.Status,
-                PaymentStatus = r.PaymentStatus                
-            }).ToList();
+            //// Project the result
+            //var result = reservations
+            //    .OrderByDescending(r => r.ReservationId)
+            //    .Select(r => new
+            //{
+            //    TicketNumber = r.ReservationId,
+            //    UserEmail = user.Email,
+            //    Movie = r.ShowTime.Movie.Title,
+            //    Theatre = r.ShowTime.Theatre.TheatreName,
+            //    Hall = _unitOfWork.Halls.Get(h => h.HallId == r.ShowTime.HallId).HallName,
+            //    ShowDate = r.ShowTime.ShowDate.ToShortDateString(),
+            //    SeatNumber = $"{r.Seat.SectionName} {r.Seat.SeatNumber}",
+            //    Status = r.Status,
+            //    PaymentStatus = r.PaymentStatus                
+            //}).ToList();
 
+            //return Json(result);
+
+            var result = await _reservationService.SearchReservationByUserOrTicketAsync(query, filterBy);
             return Json(result);
         }
 
@@ -184,12 +198,14 @@ namespace CinemaTicketingSystem.Web.Controllers
         [HttpGet]
         public IActionResult GetMoviesAndTheatres()
         {
-            var movies = _unitOfWork.Movies.GetAll()
-                .Select(m => new { movieId = m.MovieId, title = m.Title }).ToList();
-            var theatres = _unitOfWork.Theatres.GetAll()
-                .Select(t => new { theatreId = t.TheatreId, name = t.TheatreName }).ToList();
+            //var movies = _unitOfWork.Movies.GetAll()
+            //    .Select(m => new { movieId = m.MovieId, title = m.Title }).ToList();
+            //var theatres = _unitOfWork.Theatres.GetAll()
+            //    .Select(t => new { theatreId = t.TheatreId, name = t.TheatreName }).ToList();
 
-            return Json(new { movies, theatres });
+            var data = _reservationService.GetMoviesAndTheatresAsync();
+
+            return Json(new { success = true, data });
         }
 
         [HttpPost]
@@ -553,7 +569,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                         var totalPrice = session.AmountTotal / 100.0; // Convert cents to dollars
                         var payment = new Payment
                         {
-                            ReservationId = reservation.ReservationId, 
+                            ReservationId = reservation.ReservationId,
                             Amount = (decimal)totalPrice,
                             PaymentDate = reservation.ReservationDate,
                             PaymentStatus = "Paid",
@@ -566,7 +582,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                     }
 
                     // Redirect to the success page with reservation IDs
-                    return RedirectToAction("SuccessPage", new { reservationIds = string.Join(",", reservationIds)});
+                    return RedirectToAction("SuccessPage", new { reservationIds = string.Join(",", reservationIds) });
                 }
                 else
                 {
@@ -616,7 +632,7 @@ namespace CinemaTicketingSystem.Web.Controllers
                         ReservationDate = DateOnly.FromDateTime(DateTime.UtcNow),
                         Status = "Failed",
                         PaymentStatus = "Failed",
-                        UserId = userId 
+                        UserId = userId
                     };
                     _unitOfWork.Reservations.Add(reservation);
 

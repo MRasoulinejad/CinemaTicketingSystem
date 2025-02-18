@@ -43,6 +43,7 @@ builder.Services.AddScoped<ITheatreService, TheatreService>();
 builder.Services.AddScoped<IShowTimeService, ShowTimeService>();
 builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
 
 builder.Services.AddSingleton<IAppEnvironment, AppEnvironment>();
 

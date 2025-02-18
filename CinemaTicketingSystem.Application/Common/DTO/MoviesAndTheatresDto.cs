@@ -1,0 +1,14 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CinemaTicketingSystem.Application.Common.DTO
+{
+    public class MoviesAndTheatresDto
+    {
+        public List<MovieDto> Movies { get; set; }
+        public List<TheatreDto> Theatres { get; set; }
+    }
+}
