@@ -102,8 +102,16 @@ namespace CinemaTicketingSystem.Infrastructure.Services
             {
                 return null;
             }
-            var reservations = _unitOfWork.Reservations.GetAll(r => r.UserId == user.Id,
-                includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat").ToList();
+            //var reservations = _unitOfWork.Reservations.GetAll(r => r.UserId == user.Id,
+            //    includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat").ToList();
+
+            var reservations = _unitOfWork.Reservations
+                .GetAll(r => r.UserId == user.Id, includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat")
+                .OrderByDescending(r => r.ReservationDate) // Sort by reservation date (newest first)
+                .ThenByDescending(r => r.ShowTime.ShowDate) // Sort by show date (newest first)
+                .ThenByDescending(r => r.ShowTime.ShowTimeStart) // Sort by show start time (latest first)
+                .ToList();
+
 
             return new MyAccountDto
             {
