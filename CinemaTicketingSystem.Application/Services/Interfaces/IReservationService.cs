@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,8 +22,12 @@ namespace CinemaTicketingSystem.Application.Services.Interfaces
 
         Task<CheckoutConfirmationDto> CheckoutConfirmationAsync(int showTimeId, string selectedSeats, string userName);
 
-        Task<string> FinalizeBookingAsync(FinalizeBookingDto model, string domain);
-        Task<string> HandlePaymentSuccessAsync(string sessionId, string userName);
-        Task<string> HandlePaymentFailedAsync(string sessionId, string userName);
+        Task<FinalizeBookingResultDto> FinalizeBookingAsync(FinalizeBookingDto model, string domain);
+
+        Task<PaymentResultDto> ProcessPaymentSuccessAsync(string sessionId, string userName);
+        Task<PaymentResultDto> ProcessPaymentFailedAsync(string sessionId, string userName);
+
+        Task<List<TicketDto>> GetSuccessfulReservationsAsync(string reservationIds);
+
     }
 }

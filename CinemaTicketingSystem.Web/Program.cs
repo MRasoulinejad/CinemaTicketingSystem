@@ -2,6 +2,7 @@ using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.ExternalServices;
 using CinemaTicketingSystem.Application.Services.Implementation;
 using CinemaTicketingSystem.Application.Services.Interfaces;
+using CinemaTicketingSystem.Application.Services.Interfaces.Payments;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Infrastructure.Repository;
@@ -46,6 +47,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 
 builder.Services.AddSingleton<IAppEnvironment, AppEnvironment>();
+builder.Services.AddScoped<IStripeService, StripeService>();
 
 
 

@@ -1,6 +1,7 @@
 ﻿using CinemaTicketingSystem.Application.Common.DTO;
 using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.Services.Interfaces;
+using CinemaTicketingSystem.Application.Services.Interfaces.Payments;
 using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -17,11 +18,14 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IStripeService _stripeService;
         public ReservationService(IUnitOfWork unitOfWork,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IStripeService stripeService)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
+            _stripeService = stripeService;
         }
 
         public async Task<BookShowTimeDto> BookShowTimeAsync(int showTimeId)
@@ -106,10 +110,7 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
 
         }
 
-        public async Task<string> FinalizeBookingAsync(FinalizeBookingDto model, string domain)
-        {
-            throw new NotImplementedException();
-        }
+
 
         public async Task<CheckoutConfirmationDto> CheckoutConfirmationAsync(int showTimeId, string selectedSeats, string userName)
         {
@@ -212,7 +213,6 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
         }
 
 
-
         public async Task<ProceedBookingSeatDto> ProceedBookingSeatAsync(int showTimeId, int seatCount)
         {
             // Fetch the ShowTime entity
@@ -268,17 +268,6 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
             };
         }
 
-
-
-        public async Task<string> HandlePaymentFailedAsync(string sessionId, string userName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<string> HandlePaymentSuccessAsync(string sessionId, string userName)
-        {
-            throw new NotImplementedException();
-        }
 
         public async Task<List<ShowTimeSearchForResDto>> SearchReservationByShowTimeAsync(string query, string filterBy)
         {
@@ -387,6 +376,79 @@ namespace CinemaTicketingSystem.Application.Services.Implementation
                     Status = r.Status,
                     PaymentStatus = r.PaymentStatus
                 }).ToList();
+        }
+
+        public async Task<FinalizeBookingResultDto> FinalizeBookingAsync(FinalizeBookingDto model, string domain)
+        {
+            var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == model.ShowTimeId, includeProperties: "Movie");
+            if (showTime == null || showTime.Movie == null)
+            {
+                return new FinalizeBookingResultDto { Success = false, Message = "ShowTime or Movie data is missing." };
+            }
+
+            var totalPrice = showTime.Price * model.SelectedSeatIds.Count;
+            if (totalPrice <= 0)
+            {
+                return new FinalizeBookingResultDto { Success = false, Message = "Invalid total price calculation." };
+            }
+
+            if (model.SelectedSeatIds == null || !model.SelectedSeatIds.Any())
+            {
+                return new FinalizeBookingResultDto { Success = false, Message = "SelectedSeatIds is null or empty." };
+            }
+
+            if (string.IsNullOrEmpty(domain))
+            {
+                return new FinalizeBookingResultDto { Success = false, Message = "Domain is not set." };
+            }
+
+            var stripeUrl = await _stripeService.CreateStripeSessionAsync(model.ShowTimeId, model.SelectedSeatIds, totalPrice, domain);
+
+            return new FinalizeBookingResultDto
+            {
+                Success = true,
+                RedirectUrl = stripeUrl,
+                Message = "Redirecting to payment."
+            };
+        }
+
+        public async Task<PaymentResultDto> ProcessPaymentSuccessAsync(string sessionId, string userName)
+        {
+            return await _stripeService.ProcessPaymentSuccessAsync(sessionId, userName);
+        }
+
+        public async Task<PaymentResultDto> ProcessPaymentFailedAsync(string sessionId, string userName)
+        {
+            return await _stripeService.ProcessPaymentFailedAsync(sessionId, userName);
+        }
+
+        public async Task<List<TicketDto>> GetSuccessfulReservationsAsync(string reservationIds)
+        {
+            try
+            {
+                var ids = reservationIds.Split(',').Select(int.Parse).ToList();
+                // Fetch reservations by IDs
+                var reservations = _unitOfWork.Reservations.GetAll(r => ids.Contains(r.ReservationId),
+                    includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat")
+                    .Select(r => new TicketDto
+                    {
+                        TicketId = r.ReservationId,// Include Reservation ID
+                        MovieTitle = r.ShowTime.Movie.Title,
+                        TheatreName = r.ShowTime.Theatre.TheatreName,
+                        HallName = _unitOfWork.Halls.Get(x => x.HallId == r.ShowTime.HallId).HallName,
+                        SeatNumber = $"{r.Seat.SectionName} {r.Seat.SeatNumber}",
+                        ShowDate = r.ShowTime.ShowDate.ToString("MMMM dd, yyyy"),
+                        ShowTime = $"{r.ShowTime.ShowTimeStart} - {r.ShowTime.ShowTimeEnd}",
+                        Price = r.ShowTime.Price
+                    }).ToList();
+
+                return reservations;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetSuccessfulReservationsAsync: {ex.Message}");
+                return new List<TicketDto>(); // Return empty list if error occurs
+            }
         }
     }
 }

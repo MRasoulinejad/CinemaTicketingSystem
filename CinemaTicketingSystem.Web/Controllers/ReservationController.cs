@@ -572,293 +572,344 @@ namespace CinemaTicketingSystem.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> FinalizeBooking([FromBody] FinalizeBookingRequestVM model)
         {
-            try
+            //try
+            //{
+            //    var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == model.ShowTimeId, includeProperties: "Movie");
+            //    if (showTime == null || showTime.Movie == null)
+            //    {
+            //        throw new Exception("ShowTime or Movie data is missing.");
+            //    }
+
+            //    var totalPrice = showTime.Price * model.SelectedSeatIds.Count;
+            //    if (totalPrice <= 0)
+            //    {
+            //        throw new Exception("Invalid total price calculation.");
+            //    }
+
+            //    if (model.SelectedSeatIds == null || !model.SelectedSeatIds.Any())
+            //    {
+            //        throw new Exception("SelectedSeatIds is null or empty.");
+            //    }
+
+            //    var domain = $"{Request.Scheme}://{Request.Host}";
+            //    if (string.IsNullOrEmpty(domain))
+            //    {
+            //        throw new Exception("Domain is not set.");
+            //    }
+
+            //    var options = new SessionCreateOptions
+            //    {
+            //        PaymentMethodTypes = new List<string> { "card" },
+            //        LineItems = new List<SessionLineItemOptions>
+            //        {
+            //            new SessionLineItemOptions
+            //            {
+            //                PriceData = new SessionLineItemPriceDataOptions
+            //                {
+            //                    Currency = "cad", // Set currency to Canadian Dollar
+            //                    UnitAmount = (long)(totalPrice * 100), // Amount in cents
+            //                    ProductData = new SessionLineItemPriceDataProductDataOptions
+            //                    {
+            //                        Name = $"{showTime.Movie.Title} - Reservation",
+            //                        Description = $"Seats: {string.Join(", ", model.SelectedSeatIds)}"
+            //                    },
+            //                },
+            //                Quantity = 1,
+            //            },
+            //        },
+            //        Mode = "payment",
+            //        SuccessUrl = $"{domain}/Reservation/PaymentSuccess?sessionId={{CHECKOUT_SESSION_ID}}",
+            //        CancelUrl = $"{domain}/Reservation/PaymentFailed?sessionId={{CHECKOUT_SESSION_ID}}",
+
+            //        Metadata = new Dictionary<string, string>
+            //        {
+            //            { "showTimeId", model.ShowTimeId.ToString() },
+            //            { "selectedSeatIds", string.Join(",", model.SelectedSeatIds) }
+            //        }
+
+            //    };
+
+            //    var service = new SessionService();
+            //    var session = await service.CreateAsync(options);
+
+            //    // Redirect to Stripe payment page
+            //    return Json(new { success = true, redirectUrl = session.Url });
+            //}
+            //catch (Exception ex)
+            //{
+            //    // Log the exception for debugging purposes
+            //    Console.WriteLine($"Error in FinalizeBooking: {ex.Message}");
+            //    return StatusCode(500, "An error occurred while finalizing the booking.");
+            //}
+
+            var domain = $"{Request.Scheme}://{Request.Host}";
+
+            var modelDto = new FinalizeBookingDto
             {
-                var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == model.ShowTimeId, includeProperties: "Movie");
-                if (showTime == null || showTime.Movie == null)
-                {
-                    throw new Exception("ShowTime or Movie data is missing.");
-                }
+                ShowTimeId = model.ShowTimeId,
+                SelectedSeatIds = model.SelectedSeatIds
+            };
 
-                var totalPrice = showTime.Price * model.SelectedSeatIds.Count;
-                if (totalPrice <= 0)
-                {
-                    throw new Exception("Invalid total price calculation.");
-                }
+            var result = await _reservationService.FinalizeBookingAsync(modelDto, domain);
 
-                if (model.SelectedSeatIds == null || !model.SelectedSeatIds.Any())
-                {
-                    throw new Exception("SelectedSeatIds is null or empty.");
-                }
-
-                var domain = $"{Request.Scheme}://{Request.Host}";
-                if (string.IsNullOrEmpty(domain))
-                {
-                    throw new Exception("Domain is not set.");
-                }
-
-                var options = new SessionCreateOptions
-                {
-                    PaymentMethodTypes = new List<string> { "card" },
-                    LineItems = new List<SessionLineItemOptions>
-                    {
-                        new SessionLineItemOptions
-                        {
-                            PriceData = new SessionLineItemPriceDataOptions
-                            {
-                                Currency = "cad", // Set currency to Canadian Dollar
-                                UnitAmount = (long)(totalPrice * 100), // Amount in cents
-                                ProductData = new SessionLineItemPriceDataProductDataOptions
-                                {
-                                    Name = $"{showTime.Movie.Title} - Reservation",
-                                    Description = $"Seats: {string.Join(", ", model.SelectedSeatIds)}"
-                                },
-                            },
-                            Quantity = 1,
-                        },
-                    },
-                    Mode = "payment",
-                    SuccessUrl = $"{domain}/Reservation/PaymentSuccess?sessionId={{CHECKOUT_SESSION_ID}}",
-                    CancelUrl = $"{domain}/Reservation/PaymentFailed?sessionId={{CHECKOUT_SESSION_ID}}",
-
-                    Metadata = new Dictionary<string, string>
-                    {
-                        { "showTimeId", model.ShowTimeId.ToString() },
-                        { "selectedSeatIds", string.Join(",", model.SelectedSeatIds) }
-                    }
-
-                };
-
-                var service = new SessionService();
-                var session = await service.CreateAsync(options);
-
-                // Redirect to Stripe payment page
-                return Json(new { success = true, redirectUrl = session.Url });
-            }
-            catch (Exception ex)
+            if (!result.Success)
             {
-                // Log the exception for debugging purposes
-                Console.WriteLine($"Error in FinalizeBooking: {ex.Message}");
-                return StatusCode(500, "An error occurred while finalizing the booking.");
+                return BadRequest(new { message = result.Message });
             }
+
+            return Json(new { success = true, redirectUrl = result.RedirectUrl });
+
+
         }
 
         [HttpGet]
         public async Task<IActionResult> PaymentSuccess(string sessionId)
         {
-            try
+            //try
+            //{
+            //    // Initialize Stripe's session service
+            //    var service = new SessionService();
+            //    var session = await service.GetAsync(sessionId);
+
+            //    // Verify payment status
+            //    if (session.PaymentStatus == "paid")
+            //    {
+            //        // Retrieve metadata from the Stripe session
+            //        var showTimeId = int.Parse(session.Metadata["showTimeId"]);
+            //        var selectedSeatIds = session.Metadata["selectedSeatIds"]
+            //            .Split(',')
+            //            .Select(int.Parse)
+            //            .ToList();
+
+            //        // Get the current user ID from Identity or session data
+            //        var userName = User.Identity?.Name;
+            //        var user = await _userManager.FindByNameAsync(userName);
+            //        var userId = user?.Id ?? session.CustomerEmail; // Fallback to customer email if user not found
+
+            //        // Create a list to store reservation IDs
+            //        var reservationIds = new List<int>();
+
+
+            //        // Add entries to the Reservation table
+            //        foreach (var seatId in selectedSeatIds)
+            //        {
+            //            var reservation = new Reservation
+            //            {
+            //                ShowTimeId = showTimeId,
+            //                SeatId = seatId,
+            //                ReservationDate = DateOnly.FromDateTime(DateTime.UtcNow),
+            //                Status = "Confirmed", // Reservation status
+            //                PaymentStatus = "Paid", // Payment status
+            //                UserId = userId
+            //            };
+
+            //            _unitOfWork.Reservations.Add(reservation);
+            //            _unitOfWork.Save();
+
+            //            reservationIds.Add(reservation.ReservationId); // Collect the reservation ID
+
+
+            //            // Add an entry to the Payment table
+            //            var totalPrice = session.AmountTotal / 100.0; // Convert cents to dollars
+            //            var payment = new Payment
+            //            {
+            //                ReservationId = reservation.ReservationId,
+            //                Amount = (decimal)totalPrice,
+            //                PaymentDate = reservation.ReservationDate,
+            //                PaymentStatus = "Paid",
+            //                StripeSessionId = sessionId,
+            //                StripePaymentIntentId = session.PaymentIntentId
+            //            };
+
+            //            _unitOfWork.Payments.Add(payment);
+            //            _unitOfWork.Save();
+            //        }
+
+            //        // Redirect to the success page with reservation IDs
+            //        return RedirectToAction("SuccessPage", new { reservationIds = string.Join(",", reservationIds) });
+            //    }
+            //    else
+            //    {
+            //        // Redirect to a failure page if payment status is not paid
+            //        return RedirectToAction("PaymentFailed");
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    // Log the error
+            //    Console.WriteLine($"Error in PaymentSuccess: {ex.Message}");
+            //    return RedirectToAction("PaymentFailed");
+            //}
+
+
+            var userName = User.Identity?.Name;
+            var result = await _reservationService.ProcessPaymentSuccessAsync(sessionId, userName);
+
+            if (result.Success)
             {
-                // Initialize Stripe's session service
-                var service = new SessionService();
-                var session = await service.GetAsync(sessionId);
-
-                // Verify payment status
-                if (session.PaymentStatus == "paid")
-                {
-                    // Retrieve metadata from the Stripe session
-                    var showTimeId = int.Parse(session.Metadata["showTimeId"]);
-                    var selectedSeatIds = session.Metadata["selectedSeatIds"]
-                        .Split(',')
-                        .Select(int.Parse)
-                        .ToList();
-
-                    // Get the current user ID from Identity or session data
-                    var userName = User.Identity?.Name;
-                    var user = await _userManager.FindByNameAsync(userName);
-                    var userId = user?.Id ?? session.CustomerEmail; // Fallback to customer email if user not found
-
-                    // Create a list to store reservation IDs
-                    var reservationIds = new List<int>();
-
-
-                    // Add entries to the Reservation table
-                    foreach (var seatId in selectedSeatIds)
-                    {
-                        var reservation = new Reservation
-                        {
-                            ShowTimeId = showTimeId,
-                            SeatId = seatId,
-                            ReservationDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                            Status = "Confirmed", // Reservation status
-                            PaymentStatus = "Paid", // Payment status
-                            UserId = userId
-                        };
-
-                        _unitOfWork.Reservations.Add(reservation);
-                        _unitOfWork.Save();
-
-                        reservationIds.Add(reservation.ReservationId); // Collect the reservation ID
-
-
-                        // Add an entry to the Payment table
-                        var totalPrice = session.AmountTotal / 100.0; // Convert cents to dollars
-                        var payment = new Payment
-                        {
-                            ReservationId = reservation.ReservationId,
-                            Amount = (decimal)totalPrice,
-                            PaymentDate = reservation.ReservationDate,
-                            PaymentStatus = "Paid",
-                            StripeSessionId = sessionId,
-                            StripePaymentIntentId = session.PaymentIntentId
-                        };
-
-                        _unitOfWork.Payments.Add(payment);
-                        _unitOfWork.Save();
-                    }
-
-                    // Redirect to the success page with reservation IDs
-                    return RedirectToAction("SuccessPage", new { reservationIds = string.Join(",", reservationIds) });
-                }
-                else
-                {
-                    // Redirect to a failure page if payment status is not paid
-                    return RedirectToAction("PaymentFailed");
-                }
+                return RedirectToAction(result.RedirectAction, result.RouteValues);
             }
-            catch (Exception ex)
-            {
-                // Log the error
-                Console.WriteLine($"Error in PaymentSuccess: {ex.Message}");
-                return RedirectToAction("PaymentFailed");
-            }
+
+            return RedirectToAction(result.RedirectAction);
         }
 
         [HttpGet]
         public async Task<IActionResult> PaymentFailed(string sessionId)
         {
-            try
-            {
-                // Initialize Stripe's session service
-                var service = new SessionService();
-                var session = await service.GetAsync(sessionId);
+            //try
+            //{
+            //    // Initialize Stripe's session service
+            //    var service = new SessionService();
+            //    var session = await service.GetAsync(sessionId);
 
-                // Retrieve metadata from the Stripe session
-                var showTimeId = int.Parse(session.Metadata["showTimeId"]);
-                var selectedSeatIds = session.Metadata["selectedSeatIds"]
-                    .Split(',')
-                    .Select(int.Parse)
-                    .ToList();
+            //    // Retrieve metadata from the Stripe session
+            //    var showTimeId = int.Parse(session.Metadata["showTimeId"]);
+            //    var selectedSeatIds = session.Metadata["selectedSeatIds"]
+            //        .Split(',')
+            //        .Select(int.Parse)
+            //        .ToList();
 
-                var totalPrice = decimal.Parse(session.AmountTotal.ToString()) / 100; // Convert from cents to dollars
+            //    var totalPrice = decimal.Parse(session.AmountTotal.ToString()) / 100; // Convert from cents to dollars
 
-                // Get the current user ID from Identity or session data
-                var userName = User.Identity?.Name;
-                var user = await _userManager.FindByNameAsync(userName);
-                var userId = user?.Id ?? session.CustomerEmail; // Fallback to customer email if user not found
+            //    // Get the current user ID from Identity or session data
+            //    var userName = User.Identity?.Name;
+            //    var user = await _userManager.FindByNameAsync(userName);
+            //    var userId = user?.Id ?? session.CustomerEmail; // Fallback to customer email if user not found
 
-                // Record each reservation with "Failed" status
-                foreach (var seatId in selectedSeatIds)
-                {
-                    // Add entry to the Reservation table
-                    var reservation = new Reservation
-                    {
-                        ShowTimeId = showTimeId,
-                        SeatId = seatId,
-                        ReservationDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                        Status = "Failed",
-                        PaymentStatus = "Failed",
-                        UserId = userId
-                    };
-                    _unitOfWork.Reservations.Add(reservation);
+            //    // Record each reservation with "Failed" status
+            //    foreach (var seatId in selectedSeatIds)
+            //    {
+            //        // Add entry to the Reservation table
+            //        var reservation = new Reservation
+            //        {
+            //            ShowTimeId = showTimeId,
+            //            SeatId = seatId,
+            //            ReservationDate = DateOnly.FromDateTime(DateTime.UtcNow),
+            //            Status = "Failed",
+            //            PaymentStatus = "Failed",
+            //            UserId = userId
+            //        };
+            //        _unitOfWork.Reservations.Add(reservation);
 
-                    // Save all changes
-                    _unitOfWork.Save();
+            //        // Save all changes
+            //        _unitOfWork.Save();
 
-                    // Add failed payment data to the Payment table
-                    var payment = new Payment
-                    {
-                        ReservationId = reservation.ReservationId,
-                        Amount = totalPrice,
-                        PaymentDate = reservation.ReservationDate,
-                        PaymentStatus = "Failed",
-                        StripeSessionId = sessionId,
-                        StripePaymentIntentId = session.PaymentIntentId
-                    };
-                    _unitOfWork.Payments.Add(payment);
+            //        // Add failed payment data to the Payment table
+            //        var payment = new Payment
+            //        {
+            //            ReservationId = reservation.ReservationId,
+            //            Amount = totalPrice,
+            //            PaymentDate = reservation.ReservationDate,
+            //            PaymentStatus = "Failed",
+            //            StripeSessionId = sessionId,
+            //            StripePaymentIntentId = session.PaymentIntentId
+            //        };
+            //        _unitOfWork.Payments.Add(payment);
 
-                    // Save all changes
-                    _unitOfWork.Save();
-                }
+            //        // Save all changes
+            //        _unitOfWork.Save();
+            //    }
 
-                // Rollback temporary reservations
-                foreach (var seatId in selectedSeatIds)
-                {
-                    var tempReservation = _unitOfWork.TemporarySeatReservations
-                        .Get(r => r.ShowTimeId == showTimeId && r.SeatId == seatId);
+            //    // Rollback temporary reservations
+            //    foreach (var seatId in selectedSeatIds)
+            //    {
+            //        var tempReservation = _unitOfWork.TemporarySeatReservations
+            //            .Get(r => r.ShowTimeId == showTimeId && r.SeatId == seatId);
 
-                    if (tempReservation != null)
-                    {
-                        // Remove the temporary reservation
-                        _unitOfWork.TemporarySeatReservations.Remove(tempReservation);
+            //        if (tempReservation != null)
+            //        {
+            //            // Remove the temporary reservation
+            //            _unitOfWork.TemporarySeatReservations.Remove(tempReservation);
 
-                        // Save all changes
-                        _unitOfWork.Save();
-                    }
-                }
+            //            // Save all changes
+            //            _unitOfWork.Save();
+            //        }
+            //    }
 
-                // Notify the user
-                TempData["error"] = "Payment failed. Your selected seats have been released. Please try again.";
+            //    // Notify the user
+            //    TempData["error"] = "Payment failed. Your selected seats have been released. Please try again.";
 
-                // Redirect to the seat selection page for the same showtime
-                return RedirectToAction("ProceedBookingSeat", new { showTimeId, seatCount = selectedSeatIds.Count });
-            }
-            catch (Exception ex)
-            {
-                // Log the error
-                Console.WriteLine($"Error in PaymentFailed: {ex.Message}");
+            //    // Redirect to the seat selection page for the same showtime
+            //    return RedirectToAction("ProceedBookingSeat", new { showTimeId, seatCount = selectedSeatIds.Count });
+            //}
+            //catch (Exception ex)
+            //{
+            //    // Log the error
+            //    Console.WriteLine($"Error in PaymentFailed: {ex.Message}");
 
-                // Notify the user of a generic error
-                TempData["error"] = "An unexpected error occurred. Please try again.";
+            //    // Notify the user of a generic error
+            //    TempData["error"] = "An unexpected error occurred. Please try again.";
 
-                // Redirect to the home page or another fallback page
-                return RedirectToAction("FailedPaymentPage", "Reservation");
-            }
+            //    // Redirect to the home page or another fallback page
+            //    return RedirectToAction("FailedPaymentPage", "Reservation");
+            //}
+
+            var userName = User.Identity?.Name;
+            var result = await _reservationService.ProcessPaymentFailedAsync(sessionId, userName);
+            TempData["error"] = result.Message; // Store error message
+            return RedirectToAction(result.RedirectAction, result.RouteValues);
         }
 
         [HttpGet]
-        public IActionResult SuccessPage(string reservationIds)
+        public async Task<IActionResult> SuccessPage(string reservationIds)
         {
-            try
+            //try
+            //{
+            //    var ids = reservationIds.Split(',').Select(int.Parse).ToList();
+
+            //    // Fetch reservations by IDs
+            //    var reservations = _unitOfWork.Reservations.GetAll(r => ids.Contains(r.ReservationId),
+            //        includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat")
+            //        .Select(r => new TicketVM
+            //        {
+            //            TicketId = r.ReservationId, // Include Reservation ID
+            //            MovieTitle = r.ShowTime.Movie.Title,
+            //            TheatreName = r.ShowTime.Theatre.TheatreName,
+            //            HallName = _unitOfWork.Halls.Get(x => x.HallId == r.ShowTime.HallId).HallName,
+            //            SeatNumber = $"{r.Seat.SectionName} {r.Seat.SeatNumber}",
+            //            ShowDate = r.ShowTime.ShowDate.ToString("MMMM dd, yyyy"),
+            //            ShowTime = $"{r.ShowTime.ShowTimeStart} - {r.ShowTime.ShowTimeEnd}",
+            //            Price = r.ShowTime.Price
+            //        }).ToList();
+
+            //    if (!reservations.Any())
+            //    {
+            //        return NotFound("No tickets found.");
+            //    }
+
+            //    return View(reservations); // Pass the tickets to the view
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine($"Error in SuccessPage: {ex.Message}");
+            //    return RedirectToAction("ErrorPage", new { message = "Error fetching tickets." });
+            //}
+
+            var reservations = await _reservationService.GetSuccessfulReservationsAsync(reservationIds);
+
+            if (!reservations.Any())
             {
-                var ids = reservationIds.Split(',').Select(int.Parse).ToList();
-
-                // Fetch reservations by IDs
-                var reservations = _unitOfWork.Reservations.GetAll(r => ids.Contains(r.ReservationId),
-                    includeProperties: "ShowTime.Movie,ShowTime.Theatre,Seat")
-                    .Select(r => new TicketVM
-                    {
-                        TicketId = r.ReservationId, // Include Reservation ID
-                        MovieTitle = r.ShowTime.Movie.Title,
-                        TheatreName = r.ShowTime.Theatre.TheatreName,
-                        HallName = _unitOfWork.Halls.Get(x => x.HallId == r.ShowTime.HallId).HallName,
-                        SeatNumber = $"{r.Seat.SectionName} {r.Seat.SeatNumber}",
-                        ShowDate = r.ShowTime.ShowDate.ToString("MMMM dd, yyyy"),
-                        ShowTime = $"{r.ShowTime.ShowTimeStart} - {r.ShowTime.ShowTimeEnd}",
-                        Price = r.ShowTime.Price
-                    }).ToList();
-
-                if (!reservations.Any())
-                {
-                    return NotFound("No tickets found.");
-                }
-
-                return View(reservations); // Pass the tickets to the view
+                return NotFound("No tickets found.");
             }
-            catch (Exception ex)
+
+            // Convert to `TicketVM`
+            var ticketVMs = reservations.Select(dto => new TicketVM
             {
-                Console.WriteLine($"Error in SuccessPage: {ex.Message}");
-                return RedirectToAction("ErrorPage", new { message = "Error fetching tickets." });
-            }
+                TicketId = dto.TicketId,
+                MovieTitle = dto.MovieTitle,
+                TheatreName = dto.TheatreName,
+                HallName = dto.HallName,
+                SeatNumber = dto.SeatNumber,
+                ShowDate = dto.ShowDate,
+                ShowTime = dto.ShowTime,
+                Price = dto.Price
+            }).ToList();
+
+            return View(ticketVMs);
         }
 
         [HttpGet]
-        public IActionResult FailedPaymentPage()
-        {
-            return View();
-        }
-
-
-
+        public IActionResult FailedPaymentPage() => View();
 
     }
 }
