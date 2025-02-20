@@ -36,6 +36,8 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View();
         }
 
+        public async Task<IActionResult> AccessDenied() => View();
+
         [HttpPost]
         public async Task<IActionResult> Login(LoginVM model)
         {

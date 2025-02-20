@@ -1,9 +1,11 @@
 ﻿using CinemaTicketingSystem.Application.Common.DTO;
 using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.Services.Interfaces;
+using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Repository;
 using CinemaTicketingSystem.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -26,6 +28,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View();
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         public IActionResult ManageTheatre()
         {
             return View();
@@ -42,11 +45,13 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         public IActionResult CreateTheatre()
         {
             return View();
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> CreateTheatre(AddTheatreVM model)
         {
@@ -115,6 +120,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Search([FromBody] string searchTerm)
@@ -136,6 +142,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return PartialView("_TheatreListPartial", theatres);
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpGet]
         public async Task<IActionResult> UpdateTheatre(int id)
         {
@@ -202,6 +209,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         public async Task<IActionResult> UpdateTheatreSecondStep(int id)
         {
             //var theatre = _unitOfWork.Theatres.Get(x => x.TheatreId == id);
@@ -244,6 +252,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View(theatreVM);
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> UpdateTheatreSecondStep(UpdateTheatreSecondStepVM model)
         {
@@ -314,7 +323,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View(model);
         }
 
-
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteTheatre([FromBody] int id)
@@ -359,7 +368,9 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
         }
 
+
         /// Converts an IFormFile to FileUploadDto to be used in Application Layer.
+        [Authorize(Roles = SD.Role_Admin)]
         private FileUploadDto ConvertIFormFileToDto(IFormFile file)
         {
             using (var memoryStream = new MemoryStream())

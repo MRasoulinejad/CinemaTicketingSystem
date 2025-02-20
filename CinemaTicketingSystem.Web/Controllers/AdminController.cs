@@ -10,12 +10,12 @@ namespace CinemaTicketingSystem.Web.Controllers
     {       
         public IActionResult Index()
         {
-            // Get the logged-in user's name from claims
-            var userName = User.Identity.IsAuthenticated
-                ? User.FindFirstValue(ClaimTypes.Name)
-                : "Guest";
+            //// Get the logged-in user's name from claims
+            //var userName = User.Identity.IsAuthenticated
+            //    ? User.FindFirstValue(ClaimTypes.Name)
+            //    : "Guest";
 
-            ViewData["UserName"] = userName;
+            //ViewData["UserName"] = userName;
             return View();
         }
     }

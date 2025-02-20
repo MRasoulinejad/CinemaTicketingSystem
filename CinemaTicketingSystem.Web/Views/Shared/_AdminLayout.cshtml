@@ -1,7 +1,7 @@
 ﻿@{
     Layout = null;
     ViewData["Title"] = "Admin Dashboard";
-    var userName = ViewData["UserName"] ?? "Guest";
+    var userName = User.Identity.Name ?? "Guest";
 }
 
 <!DOCTYPE html>

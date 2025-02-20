@@ -1,15 +1,17 @@
 ﻿using CinemaTicketingSystem.Application.Common.DTO;
 using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.Services.Interfaces;
+using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CinemaTicketingSystem.Web.Controllers
-{
+{   
     public class MovieController : Controller
     {
         private readonly IMovieService _movieService;
@@ -148,17 +150,17 @@ namespace CinemaTicketingSystem.Web.Controllers
 
             return PartialView("_MovieListPartial", movies);
         }
-
+        [Authorize(Roles = SD.Role_Admin)]
         public IActionResult ManageMovie()
         {
             return View();
         }
-
+        [Authorize(Roles = SD.Role_Admin)]
         public IActionResult AddMovie()
         {
             return View();
         }
-
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> AddMovie(AddMovieVM model)
         {
@@ -243,7 +245,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View(model);
         }
 
-
+        [Authorize(Roles = SD.Role_Admin)]
         public IActionResult UpdateMovie(int id)
         {
             //Movie movie = _unitOfWork.Movies.Get(x => x.MovieId == id);
@@ -264,7 +266,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
             return View(updateMovieVM);
         }
-
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> UpdateMovie(UpdateMovieVM movie)
         {
@@ -359,7 +361,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
             return View(movie);
         }
-
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteMovie([FromBody]int id)
