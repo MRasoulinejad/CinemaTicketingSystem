@@ -3,6 +3,7 @@ using CinemaTicketingSystem.Application.ExternalServices;
 using CinemaTicketingSystem.Application.Services.Implementation;
 using CinemaTicketingSystem.Application.Services.Interfaces;
 using CinemaTicketingSystem.Application.Services.Interfaces.Payments;
+using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Infrastructure.Repository;
@@ -10,6 +11,7 @@ using CinemaTicketingSystem.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
+using System.Security.Claims;
 using AccountService = CinemaTicketingSystem.Infrastructure.Services.AccountService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +40,36 @@ builder.Services.AddTransient<IReCaptchaValidator, GoogleReCaptchaValidator>();
 // Register the SMTP Email Service
 builder.Services.AddTransient<ISmtpEmailService, SMTPEmailService>();
 
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied"; // Show custom access denied page
+    options.Events.OnValidatePrincipal = async context =>
+    {
+        var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+        var signInManager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<ApplicationUser>>();
+
+        var user = await userManager.GetUserAsync(context.Principal);
+        if (user != null)
+        {
+            var roles = await userManager.GetRolesAsync(user);
+            var claims = context.Principal.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+
+            if (!roles.SequenceEqual(claims)) // If roles changed, force logout
+            {
+                context.RejectPrincipal();
+                await signInManager.SignOutAsync();
+            }
+        }
+    };
+});
+
+
+
+
+
+
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IHallService, HallService>();
 builder.Services.AddScoped<ITheatreService, TheatreService>();
@@ -56,7 +88,6 @@ var app = builder.Build();
 StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();
 
 
-
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -68,8 +99,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
+
 
 app.MapStaticAssets();
 
