@@ -4,6 +4,7 @@ using CinemaTicketingSystem.Application.Services.Interfaces;
 using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -31,9 +32,11 @@ namespace CinemaTicketingSystem.Web.Controllers
             _reservationService = reservationService;
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpGet]
         public IActionResult ManageReservation() => View();
 
+        [Authorize(Roles = SD.Role_Admin)]
         public async Task<IActionResult> SearchReservationByShowTime(string query, string filterBy)
         {
             //// Validate input
@@ -100,6 +103,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         public async Task<IActionResult> SearchReservationByUserOrTicket(string query, string filterBy)
         {
             //// Validate input
@@ -248,7 +252,6 @@ namespace CinemaTicketingSystem.Web.Controllers
 
             return Json(showTimes);
         }
-
 
         public async Task<IActionResult> BookShowTime(int showTimeId)
         {
