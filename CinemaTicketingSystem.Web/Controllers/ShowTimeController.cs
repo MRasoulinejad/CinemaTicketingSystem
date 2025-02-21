@@ -1,8 +1,10 @@
 ﻿using CinemaTicketingSystem.Application.Common.DTO;
 using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.Services.Interfaces;
+using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
@@ -22,6 +24,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             _showTimeService = showTimeService;
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         public async Task<IActionResult> ShowTimeManagement()
         {
             //var showTimes = _unitOfWork.ShowTimes.GetAll(includeProperties: "Theatre,Movie").ToList();
@@ -55,6 +58,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View();
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpGet]
         public async Task<IActionResult> AddShowTime()
         {
@@ -68,6 +72,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpGet]
         public async Task<IActionResult> GetHallsByTheatre(int theatreId)
         { 
@@ -82,7 +87,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return Json(halls);
         }
 
-
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> AddShowTime(AddShowTimeVM model)
         {
@@ -112,7 +117,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return RedirectToAction("ShowTimeManagement");
         }
 
-
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpGet]
         public async Task<IActionResult> SearchShowTimes(string query, string filterBy)
         {
@@ -214,7 +219,7 @@ namespace CinemaTicketingSystem.Web.Controllers
         }
 
 
-
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpGet]
         public async Task<IActionResult> EditShowTime(int showTimeId)
         {
@@ -243,7 +248,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View(model);
         }
 
-
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> EditShowTime(EditShowTimeVM model)
         {
@@ -299,7 +304,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
         }
 
-
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteShowTime([FromBody] int showTimeId)
