@@ -8,6 +8,7 @@ using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Data;
 using CinemaTicketingSystem.Infrastructure.Repository;
 using CinemaTicketingSystem.Infrastructure.Services;
+using CinemaTicketingSystem.Web.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
@@ -66,7 +67,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 
-
+builder.Services.Configure<SiteSettings>(
+    builder.Configuration.GetSection("SiteSettings"));
 
 
 
