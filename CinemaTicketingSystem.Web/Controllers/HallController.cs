@@ -2,9 +2,11 @@
 using CinemaTicketingSystem.Application.Common.DTO;
 using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.Services.Interfaces;
+using CinemaTicketingSystem.Application.Utility;
 using CinemaTicketingSystem.Domain.Entities;
 using CinemaTicketingSystem.Infrastructure.Repository;
 using CinemaTicketingSystem.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +31,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View();
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         public async Task<IActionResult> CreateHall()
         {
             //ViewData["Theatres"] = _unitOfWork.Theatres.GetAll().ToList();
@@ -40,6 +43,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View();
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> AddHall([FromBody] AddHallVM model)
         {
@@ -89,6 +93,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> AddSection([FromBody] List<AddSectionSeatVM> sections)
         {
@@ -145,6 +150,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteHall([FromBody] int id)
@@ -181,6 +187,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         public async Task<IActionResult> EditHall(int id)
         {
             //Hall hall = _unitOfWork.Halls.Get(x => x.HallId == id);
@@ -226,6 +233,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View(editHallVM);
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> UpdateHallName(int hallId, string hallName)
         {
@@ -260,7 +268,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
         }
 
-
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> UpdateSections(EditHallVM model)
         {
