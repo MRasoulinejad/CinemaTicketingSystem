@@ -144,6 +144,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View(model);
         }
 
+        //response should not be cached at all & neither the client nor any intermediate servers should cache the response & browsers not to store any version of this page in their cache
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
