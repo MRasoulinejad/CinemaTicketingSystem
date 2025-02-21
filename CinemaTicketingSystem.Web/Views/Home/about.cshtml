@@ -1,4 +1,9 @@
-﻿@{
+﻿@using Microsoft.Extensions.Options
+@using CinemaTicketingSystem.Web.Models
+@inject IOptions<SiteSettings> SiteSettings
+
+
+@{
     ViewData["Title"] = "About Us";
 }
 
@@ -10,17 +15,17 @@
             <hr class="w-25 mx-auto">
         </div>
     </div>
-
+    
     <!-- About Content Card -->
     <div class="row">
         <div class="col-lg-8 offset-lg-2">
             <div class="card shadow-sm">
                 <div class="card-header bg-dark text-white">
-                    <h3 class="mb-0">About Cinema Ticket</h3>
+                    <h3 class="mb-0">About @SiteSettings.Value.SiteName  </h3>
                 </div>
                 <div class="card-body">
                     <p>
-                        Welcome to <strong>Cinema Ticket</strong> – your premier destination for purchasing movie tickets online.
+                        Welcome to <strong>@SiteSettings.Value.SiteName</strong> – your premier destination for purchasing movie tickets online.
                         We are passionate about cinema and dedicated to providing you with a seamless and enjoyable booking experience.
                     </p>
                     <p>
