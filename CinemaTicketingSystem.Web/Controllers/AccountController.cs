@@ -240,12 +240,13 @@ namespace CinemaTicketingSystem.Web.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-
+        [Authorize(Roles = SD.Role_Admin)]
         public IActionResult AdminUserManager()
         {
             return View();
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpGet]
         public async Task<IActionResult> SearchUsers(string query)
         {
@@ -288,6 +289,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             }
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> UpdateUser(string userEmail)
         {
@@ -340,6 +342,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = SD.Role_Admin)]
         [HttpPost]
         public async Task<IActionResult> UpdateUserSecondStep(UpdateUserVM model)
         {
