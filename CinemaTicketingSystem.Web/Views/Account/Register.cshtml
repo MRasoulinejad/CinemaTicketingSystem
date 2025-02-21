@@ -23,6 +23,7 @@
                 @model RegisterUserVM
 
                 <form asp-action="Register" method="post">
+                    <input hidden asp-for="RedirectUrl" />
                     <div class="row">
                         <!-- First Name -->
                         <div class="col-md-6 mb-3">

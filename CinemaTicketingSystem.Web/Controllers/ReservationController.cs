@@ -253,6 +253,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return Json(showTimes);
         }
 
+        [Authorize]
         public async Task<IActionResult> BookShowTime(int showTimeId)
         {
             //var showTime = _unitOfWork.ShowTimes.Get(x => x.ShowTimeId == showTimeId);
@@ -287,6 +288,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             //return View(model);
         }
 
+        [Authorize]
         public async Task<IActionResult> ProceedBookingSeat(int showTimeId, int seatCount)
         {
 
@@ -387,6 +389,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> ConfirmCheckout([FromBody] ConfirmCheckoutVM model)
         {
@@ -472,6 +475,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         }
 
+        [Authorize]
         public async Task<IActionResult> CheckoutConfirmation(int showTimeId, string selectedSeats)
         {
 
@@ -571,6 +575,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         }
 
+        [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> FinalizeBooking([FromBody] FinalizeBookingRequestVM model)
@@ -665,6 +670,7 @@ namespace CinemaTicketingSystem.Web.Controllers
 
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> PaymentSuccess(string sessionId)
         {
@@ -756,6 +762,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return RedirectToAction(result.RedirectAction);
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> PaymentFailed(string sessionId)
         {
@@ -853,6 +860,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return RedirectToAction(result.RedirectAction, result.RouteValues);
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> SuccessPage(string reservationIds)
         {
@@ -911,6 +919,7 @@ namespace CinemaTicketingSystem.Web.Controllers
             return View(ticketVMs);
         }
 
+        [Authorize]
         [HttpGet]
         public IActionResult FailedPaymentPage() => View();
 

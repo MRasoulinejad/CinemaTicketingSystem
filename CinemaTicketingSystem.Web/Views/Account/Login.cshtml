@@ -22,6 +22,7 @@
                 @model LoginVM
 
                 <form asp-action="Login" method="post">
+                    <input hidden asp-for="RedirectUrl" />
                     <!-- Username Field -->
                     <div class="mb-3">
                         <label for="Username" class="form-label">Username</label>
@@ -54,7 +55,7 @@
                     <!-- Forgot Password and Register Links -->
                     <div class="text-center mt-3">
                         <a asp-action="ForgotPassword" class="text-decoration-none">Forgot Password?</a> |
-                        <a asp-action="Register" class="text-decoration-none">Create an Account</a>
+                        <a asp-action="Register" asp-route-returnUrl="@Model.RedirectUrl" class="text-decoration-none">Create an Account</a>
                     </div>
                 </form>
             </div>

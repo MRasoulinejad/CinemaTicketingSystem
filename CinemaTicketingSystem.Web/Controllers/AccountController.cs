@@ -30,10 +30,18 @@ namespace CinemaTicketingSystem.Web.Controllers
             _accountService = accountService;
         }
 
-        public async Task<IActionResult> Login()
+        public async Task<IActionResult> Login(string? returnUrl = null)
         {
+            returnUrl ??= Url.Content("~/");
+
+            LoginVM loginVM = new LoginVM
+            {
+                RedirectUrl = returnUrl
+            };
+
             ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
-            return View();
+
+            return View(loginVM);
         }
 
         public async Task<IActionResult> AccessDenied() => View();
@@ -114,10 +122,18 @@ namespace CinemaTicketingSystem.Web.Controllers
             return Redirect(result);
         }
 
-        public IActionResult Register()
+        public IActionResult Register(string? returnUrl = null)
         {
+            returnUrl ??= Url.Content("~/");
+
+            RegisterUserVM registerUserVM = new RegisterUserVM
+            {
+                RedirectUrl = returnUrl
+            };
+
             ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
-            return View();
+
+            return View(registerUserVM);
         }
 
         [HttpPost]
