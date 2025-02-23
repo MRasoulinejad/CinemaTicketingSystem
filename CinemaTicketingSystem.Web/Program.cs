@@ -79,6 +79,7 @@ builder.Services.AddScoped<IShowTimeService, ShowTimeService>();
 builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 
 builder.Services.AddSingleton<IAppEnvironment, AppEnvironment>();
 builder.Services.AddScoped<IStripeService, StripeService>();
@@ -104,6 +105,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+SeedDatabase();
 
 app.MapStaticAssets();
 
@@ -114,3 +116,12 @@ app.MapControllerRoute(
 
 
 app.Run();
+
+void SeedDatabase()
+{
+    using(var scope = app.Services.CreateScope())
+    {
+        var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        dbInitializer.Initialize();
+    }
+}
