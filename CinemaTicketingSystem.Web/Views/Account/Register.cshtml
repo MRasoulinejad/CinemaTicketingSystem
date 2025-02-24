@@ -10,14 +10,14 @@
                 <h2 class="text-center fw-bold mb-4">📝 Register</h2>
 
                 <!-- Validation Messages -->
-                @if (ViewData["Error"] != null && !string.IsNullOrEmpty(ViewData["Error"].ToString()))
+                @if (TempData["Error"] != null)
                 {
-                    <div class="alert alert-danger">@ViewData["Error"]</div>
+                    <div class="alert alert-danger">@TempData["Error"]</div>
                 }
 
-                @if (ViewData["Success"] != null && !string.IsNullOrEmpty(ViewData["Success"].ToString()))
+                @if (TempData["Success"] != null)
                 {
-                    <div class="alert alert-success">@ViewData["Success"]</div>
+                    <div class="alert alert-success">@TempData["Success"]</div>
                 }
 
                 @model RegisterUserVM

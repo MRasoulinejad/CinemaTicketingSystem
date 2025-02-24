@@ -1,4 +1,5 @@
-﻿using CinemaTicketingSystem.Application.Common.DTO;
+﻿using Azure;
+using CinemaTicketingSystem.Application.Common.DTO;
 using CinemaTicketingSystem.Application.Common.Interfaces;
 using CinemaTicketingSystem.Application.ExternalServices;
 using CinemaTicketingSystem.Application.Services.Interfaces;
@@ -98,10 +99,19 @@ namespace CinemaTicketingSystem.Web.Controllers
 
             string response = Request.Form["g-recaptcha-response"];
 
+            if (string.IsNullOrEmpty(response))
+            {
+                ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
+                TempData["Error"] = "Please complete the reCAPTCHA.";
+                return View(model);
+            }
+
+            // Validate Google reCAPTCHA
             if (!await _accountService.ValidateReCaptchaAsync(response))
             {
-                ViewData["Error"] = "Invalid reCAPTCHA. Please try again.";
-                return View();
+                ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
+                TempData["Error"] = "Invalid reCAPTCHA. Please try again.";
+                return View(model);
             }
 
             var newModel = new LoginDto
@@ -115,8 +125,9 @@ namespace CinemaTicketingSystem.Web.Controllers
             var result = await _accountService.LoginAsync(newModel);
             if (result == "Invalid login attempt")
             {
-                ModelState.AddModelError("", "Invalid login attempt");
-                return View();
+                ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
+                TempData["Error"] = "Invalid login attempt";
+                return View(model);
             }
 
             return Redirect(result);
@@ -141,26 +152,36 @@ namespace CinemaTicketingSystem.Web.Controllers
         {
             model.gRecaptchaResponse = Request.Form["g-recaptcha-response"];
 
+            // Check if reCAPTCHA is empty
+            if (string.IsNullOrEmpty(model.gRecaptchaResponse))
+            {
+                ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
+                TempData["Error"] = "Please complete the reCAPTCHA.";
+                return View(model);
+            }
+
             // Validate Google reCAPTCHA
             if (!await _accountService.ValidateReCaptchaAsync(model.gRecaptchaResponse))
             {
                 ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
                 ViewData["Error"] = "Invalid reCAPTCHA. Please try again.";
-                return View();
+                return View(model);
             }
 
             if (ModelState.IsValid)
             {
                 if (!model.Terms)
                 {
-                    ViewData["Error"] = "You must agree to the terms and conditions.";
-                    return View();
+                    ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
+                    TempData["Error"] = "You must agree to the terms and conditions.";
+                    return View(model);
                 }
 
                 if (model.Password != model.ConfirmPassword)
                 {
-                    ViewData["Error"] = "Passwords do not match.";
-                    return View();
+                    ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
+                    TempData["Error"] = "Passwords do not match.";
+                    return View(model);
                 }
 
                 var newModel = new RegisterUserDto
@@ -175,13 +196,14 @@ namespace CinemaTicketingSystem.Web.Controllers
                 var result = await _accountService.RegisterAsync(newModel);
                 if (result == "User already exists" || result == "Failed")
                 {
-                    ViewData["Error"] = result;
-                    return View();
+                    ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
+                    TempData["Error"] = result;
+                    return View(model);
                 }
 
                 if (string.IsNullOrEmpty(model.RedirectUrl))
                 {
-                    ViewData["Success"] = "Registration successful! Please log in.";
+                    TempData["Success"] = "Registration successful! Please log in.";
                     return RedirectToAction("Index", "Home");
                 }
                 else

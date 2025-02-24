@@ -9,14 +9,11 @@
                 <h2 class="text-center fw-bold mb-4">🔐 Login</h2>
 
                 <!-- Validation Messages -->
-                @if (ViewData["Error"] != null && !string.IsNullOrEmpty(ViewData["Error"].ToString()))
-                {
-                    <div class="alert alert-danger">@ViewData["Error"]</div>
-                }
-
-                @if (ViewData["Invalid"] != null && !string.IsNullOrEmpty(ViewData["Invalid"].ToString()))
-                {
-                    <div class="alert alert-danger">@ViewData["Invalid"]</div>
+                @{
+                    if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger mt-3">@TempData["Error"]</div>
+                    }
                 }
 
                 @model LoginVM
