@@ -91,21 +91,35 @@ namespace CinemaTicketingSystem.Web.Controllers
         public async Task<IActionResult> Contact(ContactFormVM model)
         {
 
-            string Response = Request.Form["g-recaptcha-response"];
+            string response = Request.Form["g-recaptcha-response"];
 
-            // Validate Google reCAPTCHA
-            if (!_reCaptchaValidator.ValidateReCaptcha(Response))
+            if (string.IsNullOrEmpty(response))
             {
                 ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
-                ViewData["Error"] = "Invalid reCAPTCHA. Please try again.";
-                return View();
+                TempData["ErrorMessage"] = "Please complete the reCAPTCHA.";
+                return View(model);
             }
 
-            // Send Email
-            if (ModelState.IsValid)
+
+            // Validate Google reCAPTCHA
+            if (!_reCaptchaValidator.ValidateReCaptcha(response))
             {
-                try
-                {
+                ViewData["SiteKey"] = _configuration["GoogleReCaptcha:SiteKey"];
+                TempData["ErrorMessage"] = "Invalid reCAPTCHA. Please try again.";
+                return View(model);
+            }
+            
+
+            // if model is not valid
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Please fill in all the required fields.";
+                return View(model);
+
+            }
+            //Send Email
+            try
+            {
                     // Get the admin email from configuration
                     string adminEmail = _configuration["SMTP:AdminEmail"];
 
@@ -123,25 +137,23 @@ namespace CinemaTicketingSystem.Web.Controllers
                     {
                         //Success
                         TempData["SuccessMessage"] = "Your message has been sent successfully!";
-                        return RedirectToAction("Contact");
-                    }
+                        return View();
+                }
                     else
                     {
                         //Error
                         TempData["ErrorMessage"] = "An error occurred while sending your message. Please try again.";
-                        return RedirectToAction("Contact");
-                    }
+                        return View(model);
+                }
                     
                 }
                 catch (Exception ex)
                 {
                     //Error
-                    TempData["ErrorMessage"] = "An error occurred while sending your message. Please try again.";
-                    return RedirectToAction("Contact");
-                }
+                    TempData["ErrorMessage"] = ex.Message;
+                    return View(model);
             }
-
-            return View(model);
+            
         }
 
         //response should not be cached at all & neither the client nor any intermediate servers should cache the response & browsers not to store any version of this page in their cache
